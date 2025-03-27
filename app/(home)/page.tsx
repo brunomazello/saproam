@@ -1,17 +1,14 @@
-import { Radio } from "lucide-react";
 import logo from "../assets/logo.png";
 import {
   LandPlot,
   CircleGauge,
   User,
-  Link,
   ShieldQuestion,
   ShieldAlert,
 } from "lucide-react";
 import { LinkButton } from "../components/button";
 import Image from "next/image";
-import SubscriptionForm from "./subscription-form";
-
+import AdComponent from "../components/AdComponent";
 export default function Home() {
   return (
     <div className="min-h-dvh flex justify-center gap-8 flex-col md:mb-12">
@@ -22,7 +19,7 @@ export default function Home() {
           PRO-AM LEAGUE 2025
         </h1>
       </div>
-      <div className="flex gap-5 items-stretch flex-col md:flex-row">
+      <div className="flex gap-5 md:flex-col flex-col">
         <div className="flex-1 bg-gray-700 border border-gray-600 rounded-2xl p-8 space-y-6">
           <div className="flex items-center justify-between md:justify-center">
             <h2 className="font-heading font-semibold text-gray-200 md:text-4xl text-2xl text-center md:text-center">
@@ -58,10 +55,6 @@ export default function Home() {
             <li className="text-gray-300 leading-relaxed text-sm md:text-base mb-2.5 text-center md:text-left">
               - Entre cada temporada, haverá uma off-season de uma semana para
               análises de expansão de equipes e ajustes no formato competitivo.
-            </li>
-            <li className="text-gray-300 leading-relaxed text-sm md:text-base mb-2.5 text-center md:text-left">
-              - Calendário de Jogos: as partidas serão disputadas de segunda a
-              quinta-feira, das 21:00 às 23:00.
             </li>
             <li className="text-gray-300 leading-relaxed text-sm md:text-base mb-2.5 text-center md:text-left">
               - Calendário de Jogos: as partidas serão disputadas de segunda a
@@ -140,6 +133,7 @@ export default function Home() {
             </div>
           </div>
         </div>
+        <AdComponent />
       </div>
     </div>
   );
