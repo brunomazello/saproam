@@ -9,9 +9,12 @@ import {
 import { LinkButton } from "../components/button";
 import Image from "next/image";
 import AdComponent from "../components/AdComponent";
+import ListarTimes from "../components/listartimes";
+import ExibirTimes from "../components/exibirtimes";
 export default function Home() {
   return (
     <div className="min-h-dvh flex justify-center gap-8 flex-col md:mb-12">
+      
       <div className="flex flex-col md:mt-6 items-center md:items-center">
         <Image src={logo} alt="devstage" width={108.5} height={30} />
         <h1 className="text-4xl text-center leading-none font-heading font-medium flex flex-col md:text-7xl md:text-center mt-7">
@@ -19,7 +22,7 @@ export default function Home() {
           PRO-AM LEAGUE 2025
         </h1>
       </div>
-      <div className="flex gap-5 md:flex-col flex-col">
+      <div className="flex gap-5 md:flex-row flex-col">
         <div className="flex-1 bg-gray-700 border border-gray-600 rounded-2xl p-8 space-y-6">
           <div className="flex items-center justify-between md:justify-center">
             <h2 className="font-heading font-semibold text-gray-200 md:text-4xl text-2xl text-center md:text-center">
@@ -103,7 +106,7 @@ export default function Home() {
               - As estatísticas dos jogadores no Combine serão registradas e
               analisadas pelos GMs para futuras seleções e trocas.
             </li>
-            <li className="text-gray-300 leading-relaxed text-sm md:text-base mb-2.5 text-center md:text-base">
+            <li className="text-gray-300 leading-relaxed text-sm md:text-base mb-2.5 text-center md:text-left">
               - Jogadores que não se registrarem até o prazo estipulado não
               poderão participar da liga até a reabertura de registros na
               próxima temporada.
@@ -116,7 +119,7 @@ export default function Home() {
             </LinkButton>
           </div>
           <div className="bg-gray-500 px-5 py-5 rounded-2xl">
-            <div className="flex mb-6 justify-center">
+            <div className="flex mb-6 justify-center items-center">
               <ShieldAlert className="w-16 h-16 md:w-8 md:h-8" />
               <h2 className="font-heading font-semibold text-gray-200 text-md ml-2.5">
                 IMPORTANTE: Se você não tem disponibilidade para jogar de
@@ -124,7 +127,7 @@ export default function Home() {
                 inscreva.
               </h2>
             </div>
-            <div className="flex justify-center">
+            <div className="flex justify-center items-center">
               <ShieldQuestion className="w-16 h-16 md:w-8 md:h-8" />
               <h2 className="font-heading font-semibold text-gray-200 text-md ml-2.5">
                 Dúvidas? Entre em contato com a administração da liga.
@@ -133,7 +136,9 @@ export default function Home() {
             </div>
           </div>
         </div>
-        <AdComponent />
+        {/* <div className="flex md:flex-col">
+          <ListarTimes />
+        </div> */}
       </div>
     </div>
   );
