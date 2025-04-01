@@ -26,7 +26,7 @@ const ListarTimes: React.FC = () => {
           id: doc.id,
           nome: data.Nome, // Pegando o nome do time
           vitorias: data.Vitorias, // Pegando o número de vitórias
-          derrotas: data.Derrotas, // Pegando o número de
+          derrotas: data.Derrotas, // Pegando o número de derrotas
           pontosFeitos: data.pontosFeitos,
           pontosRecebidos: data.pontosRecebidos,
           jogadores: [
@@ -39,6 +39,15 @@ const ListarTimes: React.FC = () => {
         };
       }) as Time[];
 
+      // Ordenar os times pela quantidade de vitórias (decrescente)
+      timesData.sort((a, b) => {
+        if (a.vitorias === b.vitorias) {
+          // Caso as vitórias sejam iguais, ordena pelo número de pontos feitos
+          return b.pontosFeitos - a.pontosFeitos;
+        }
+        return b.vitorias - a.vitorias;
+      });
+
       setTimes(timesData);
     };
 
@@ -46,21 +55,31 @@ const ListarTimes: React.FC = () => {
   }, []);
 
   return (
-    <div className=" bg-gray-700 border border-gray-600 rounded-2xl p-8 space-y-6 h-auto w-full">
-      <div className="flex items-center align-middle mb-6 justify-center md:justify-start">
-        <Crown size={35}/>
-        <h2 className="font-heading font-semibold text-gray-200 ml-2.5 text-3xl uppercase">
+    <div className="bg-gray-700 border border-gray-600 rounded-2xl p-8 space-y-6 h-auto w-full">
+      <div className="flex items-center mb-6 justify-center">
+        <Crown size={35} />
+        <h2 className="font-heading font-semibold text-gray-200 ml-2.5 text-3xl uppercase ">
           Ranking Times
         </h2>
       </div>
-      <ul className="md:text-left text-center">
-        {times.map((time) => (
-          <li key={time.id}>
-            <strong>{time.nome}</strong> - V: {time.vitorias} | D:{" "}
-            {time.derrotas}
-          </li>
-        ))}
-      </ul>
+      <table className="table-auto w-full text-gray-200">
+        <thead>
+          <tr>
+            <th className="px-4 py-2 border-b">Time</th>
+            <th className="px-4 py-2 border-b">Vitórias</th>
+            <th className="px-4 py-2 border-b">Derrotas</th>
+          </tr>
+        </thead>
+        <tbody>
+          {times.map((time) => (
+            <tr key={time.id} className="text-center">
+              <td className="px-4 py-2 border-b">{time.nome}</td>
+              <td className="px-4 py-2 border-b">{time.vitorias}</td>
+              <td className="px-4 py-2 border-b">{time.derrotas}</td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
     </div>
   );
 };

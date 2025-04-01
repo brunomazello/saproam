@@ -28,9 +28,9 @@ export default function Home() {
         </h1>
       </div>
       <div className="flex md:flex-col flex-col md:block hidden">
-          <TimerPage />
-          {/* <ListarTimes /> */}
-        </div>
+        <TimerPage />
+        {/* <ListarTimes /> */}
+      </div>
       <div className="flex gap-5 md:flex-row flex-col">
         <div className="flex md:flex-col flex-col md:hidden">
           <TimerPage />
@@ -106,8 +106,9 @@ export default function Home() {
           </div>
 
           <p className="text-gray-300 leading-relaxed text-sm md:text-base text-center md:text-left">
-            Para participar do <span className="font-bold underline">COMBINE</span>, o jogador precisa estar registrado. A
-            inscrição de jogadores é gratuita.
+            Para participar do{" "}
+            <span className="font-bold underline">COMBINE</span>, o jogador
+            precisa estar registrado. A inscrição de jogadores é gratuita.
           </p>
           <ol>
             <li className="text-gray-300 leading-relaxed text-sm md:text-base mb-2.5 text-center md:text-left">
@@ -148,8 +149,13 @@ export default function Home() {
             </div>
           </div>
         </div>
-        <div className="flex md:flex-col flex-col md:hidden block">
-          {/* <ListarTimes /> */}
+        <div className="flex md:flex-col flex-col block">
+          <ListarTimes />
+          <div className="flex items-center w-full justify-end mt-4">
+            <a href="/times" className="hover:text-gray-300 hover:underline">
+              Ver completo
+            </a>
+          </div>
         </div>
       </div>
     </div>
