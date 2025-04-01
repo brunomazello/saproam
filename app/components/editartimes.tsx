@@ -180,7 +180,7 @@ const EditarTime: React.FC = () => {
           <button
             type="submit"
             disabled={loading}
-            className="flex justify-between items-center px-5 h-12 bg-gray-500 text-blue font-semibold rounded-xl w-auto cursor-pointer hover:bg-blue hover:text-gray-900 transition-colors duration-300 "
+            className="flex justify-between items-center px-5 h-12 bg-gray-500 text-blue font-semibold rounded-xl w-auto cursor-pointer hover:bg-blue hover:text-gray-900 transition-colors duration-300 mt-6"
           >
             {loading ? "Carregando..." : "Salvar Alterações"}
           </button>

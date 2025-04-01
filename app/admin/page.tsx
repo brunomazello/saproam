@@ -3,6 +3,7 @@
 import { useState } from "react";
 import AdicionarTime from "../components/addteam";
 import EditarTime from "../components/editartimes";
+import EditarJogador from "../components/editarjogador";
 
 export default function AdminPage() {
   const [senha, setSenha] = useState("");
@@ -42,6 +43,7 @@ export default function AdminPage() {
     <div className="min-h-screen flex items-center justify-between gap-16 flex-col md:flex-row">
       <AdicionarTime />
       <EditarTime />
+      <EditarJogador />
     </div>
   );
 }

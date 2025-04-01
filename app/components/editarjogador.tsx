@@ -3,10 +3,12 @@
 import { useState, useEffect } from "react";
 import { db, doc, getDoc, updateDoc } from "../../firebase"; // Importando Firestore
 
-const AtualizarPontuacao: React.FC = () => {
+const EditarJogador: React.FC = () => {
   const [times, setTimes] = useState<string[]>([]);
   const [nomeTime, setNomeTime] = useState<string>("");
-  const [jogadores, setJogadores] = useState<{ id: string; nome: string }[]>([]);
+  const [jogadores, setJogadores] = useState<{ id: string; nome: string }[]>(
+    []
+  );
   const [jogadorSelecionado, setJogadorSelecionado] = useState<string>("");
 
   // Estados para armazenar as estatísticas do jogador
@@ -23,7 +25,7 @@ const AtualizarPontuacao: React.FC = () => {
 
   // Buscar lista de times no Firestore (simulação, você pode adaptar)
   useEffect(() => {
-    setTimes(["Time Dos Amigos", "Outro Time"]); // Exemplo estático, substitua pela busca no Firestore
+    setTimes(["Time 1", "Time 2"]); // Exemplo estático, substitua pela busca no Firestore
   }, []);
 
   // Buscar jogadores do time selecionado
@@ -85,6 +87,7 @@ const AtualizarPontuacao: React.FC = () => {
         }
       } catch (err) {
         setError("Erro ao carregar estatísticas do jogador.");
+        console.log(err);
       }
     };
 
@@ -122,16 +125,23 @@ const AtualizarPontuacao: React.FC = () => {
   };
 
   return (
-    <div>
-      <h2>Atualizar Estatísticas de Jogador</h2>
+    <div className="flex flex-col items-center w-full">
+      <h2 className="font-heading font-semibold text-gray-200 text-md ml-2.5 text-3xl mb-3 uppercase">
+        Atualizar Estatísticas de Jogador
+      </h2>
       {error && <p className="text-red-500">{error}</p>}
 
-      <div>
-        <label>Nome do Time</label>
-        <select value={nomeTime} onChange={(e) => setNomeTime(e.target.value)}>
-          <option value="">Selecione um time</option>
+      <div className="mb-6">
+        <label className="block text-gray-300 text-center">
+          Nome do Time
+        </label>
+        <select
+          value={nomeTime}
+          onChange={(e) => setNomeTime(e.target.value)}
+          className="w-full p-2 rounded border border-gray-300"
+        >
           {times.map((time) => (
-            <option key={time} value={time}>
+            <option key={time} value={time} className="text-black">
               {time}
             </option>
           ))}
@@ -139,15 +149,19 @@ const AtualizarPontuacao: React.FC = () => {
       </div>
 
       {jogadores.length > 0 && (
-        <div>
-          <label>Jogador</label>
+        <div className="mb-6">
+          <label className="block text-gray-300">Jogador</label>
           <select
+            className="p-2 rounded border border-gray-300"
             value={jogadorSelecionado}
             onChange={(e) => setJogadorSelecionado(e.target.value)}
           >
-            <option value="">Selecione um jogador</option>
             {jogadores.map((jogador) => (
-              <option key={jogador.id} value={jogador.id}>
+              <option
+                key={jogador.id}
+                value={jogador.id}
+                className="text-black"
+              >
                 {jogador.nome}
               </option>
             ))}
@@ -155,46 +169,85 @@ const AtualizarPontuacao: React.FC = () => {
         </div>
       )}
 
-      <div>
-        <label>Pontuação</label>
-        <input type="number" value={pontuacao} onChange={(e) => setPontuacao(Number(e.target.value))} />
+      <div className="mb-6">
+        <label className="block text-gray-300">Pontuação</label>
+        <input
+          type="number"
+          value={pontuacao}
+          onChange={(e) => setPontuacao(Number(e.target.value))}
+          className="p-2 rounded border border-gray-300"
+        />
       </div>
 
-      <div>
-        <label>Rebotes</label>
-        <input type="number" value={rebotes} onChange={(e) => setRebotes(Number(e.target.value))} />
+      <div className="mb-6">
+        <label className="block text-gray-300">Rebotes</label>
+        <input
+          type="number"
+          value={rebotes}
+          onChange={(e) => setRebotes(Number(e.target.value))}
+          className="p-2 rounded border border-gray-300"
+        />
       </div>
 
-      <div>
-        <label>Assistências</label>
-        <input type="number" value={assistencias} onChange={(e) => setAssistencias(Number(e.target.value))} />
+      <div className="mb-6">
+        <label className="block text-gray-300">Assistências</label>
+        <input
+          type="number"
+          value={assistencias}
+          onChange={(e) => setAssistencias(Number(e.target.value))}
+          className="p-2 rounded border border-gray-300"
+        />
       </div>
 
-      <div>
-        <label>Roubos</label>
-        <input type="number" value={roubos} onChange={(e) => setRoubos(Number(e.target.value))} />
+      <div className="mb-6">
+        <label className="block text-gray-300">Roubos</label>
+        <input
+          type="number"
+          value={roubos}
+          onChange={(e) => setRoubos(Number(e.target.value))}
+          className="p-2 rounded border border-gray-300"
+        />
       </div>
 
-      <div>
-        <label>Bloqueios</label>
-        <input type="number" value={bloqueios} onChange={(e) => setBloqueios(Number(e.target.value))} />
+      <div className="mb-6">
+        <label className="block text-gray-300">Bloqueios</label>
+        <input
+          type="number"
+          value={bloqueios}
+          onChange={(e) => setBloqueios(Number(e.target.value))}
+          className="p-2 rounded border border-gray-300"
+        />
       </div>
 
-      <div>
-        <label>Faltas</label>
-        <input type="number" value={faltas} onChange={(e) => setFaltas(Number(e.target.value))} />
+      <div className="mb-6">
+        <label className="block text-gray-300">Faltas</label>
+        <input
+          type="number"
+          value={faltas}
+          onChange={(e) => setFaltas(Number(e.target.value))}
+          className="p-2 rounded border border-gray-300"
+        />
       </div>
 
-      <div>
-        <label>Erros</label>
-        <input type="number" value={erros} onChange={(e) => setErros(Number(e.target.value))} />
+      <div className="mb-6">
+        <label className="block text-gray-300">Erros</label>
+        <input
+          type="number"
+          value={erros}
+          onChange={(e) => setErros(Number(e.target.value))}
+          className="p-2 rounded border border-gray-300 mb-6"
+        />
       </div>
 
-      <button onClick={atualizarEstatisticas} disabled={loading}>
+      <button
+        onClick={atualizarEstatisticas}
+        disabled={loading}
+        className="flex justify-between items-center px-5 h-12 bg-gray-500 text-blue font-semibold rounded-xl w-auto cursor-pointer hover:bg-blue hover:text-gray-900 transition-colors duration-300"
+      >
         {loading ? "Carregando..." : "Atualizar Estatísticas"}
       </button>
     </div>
   );
 };
 
-export default AtualizarPontuacao;
+export default EditarJogador;
