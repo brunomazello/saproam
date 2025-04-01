@@ -4,11 +4,13 @@ import { useState } from "react";
 import AdicionarTime from "../components/addteam";
 import EditarTime from "../components/editartimes";
 import EditarJogador from "../components/editarjogador";
+import Image from "next/image";
+import logo from "../assets/logo.png";
 
 export default function AdminPage() {
   const [senha, setSenha] = useState("");
   const [logado, setLogado] = useState(false);
-  const senhaCorreta = "admin123"; // Altere para uma senha mais segura
+  const senhaCorreta = "SAPM@ADM2025"; // Altere para uma senha mais segura
 
   const handleLogin = () => {
     if (senha === senhaCorreta) {
@@ -21,6 +23,13 @@ export default function AdminPage() {
   if (!logado) {
     return (
       <div className="flex flex-col items-center justify-center min-h-screen">
+        <div className="flex flex-col md:mt-6 items-center md:items-center mb-10">
+          <Image src={logo} alt="devstage" width={108.5} height={30} />
+          <h1 className="text-4xl text-center leading-none font-heading font-medium flex flex-col md:text-7xl md:text-center mt-7">
+            <span>SOUTH AMERICA</span>
+            PRO-AM LEAGUE 2025
+          </h1>
+        </div>
         <h2 className="text-lg font-bold mb-4">Área Administrativa</h2>
         <input
           type="password"

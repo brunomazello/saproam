@@ -101,7 +101,7 @@ const EditarTime: React.FC = () => {
   };
 
   return (
-    <div className="bg-gray-900 p-6 rounded-xl text-gray-200 max-w-2xl mx-auto shadow-lg">
+    <div className="flex flex-col items-center  p-6 rounded-xl text-gray-200 w-full mx-auto shadow-lg">
       <h2 className="font-heading font-semibold text-blue text-3xl mb-4 uppercase">Editar Time</h2>
       {error && <p className="text-danger text-sm mb-3">{error}</p>}
 
