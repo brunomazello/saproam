@@ -52,7 +52,7 @@ export default function AdminPage() {
     <div className="min-h-screen flex items-center justify-between gap-16 flex-col md:flex-row">
       <AdicionarTime />
       <EditarTime />
-      <EditarJogador />
+      <EditarJogador /> 
     </div>
   );
 }

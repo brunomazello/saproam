@@ -20,9 +20,7 @@ const EditarJogador: React.FC = () => {
   const [nomeTime, setNomeTime] = useState<string>("");
   const [jogadores, setJogadores] = useState<Jogador[]>([]);
   const [jogadorSelecionado, setJogadorSelecionado] = useState<string>("");
-  const [estatisticas, setEstatisticas] = useState<
-    Omit<Jogador, "id" | "nome">
-  >({
+  const [estatisticas, setEstatisticas] = useState<Omit<Jogador, "id" | "nome">>({
     pontuacao: 0,
     rebotes: 0,
     assistencias: 0,
@@ -49,9 +47,21 @@ const EditarJogador: React.FC = () => {
 
   useEffect(() => {
     if (!nomeTime) return;
+
     const fetchJogadores = async () => {
       setLoading(true);
       setError(null);
+      setJogadorSelecionado(""); // Reseta jogador ao mudar de time
+      setEstatisticas({ // Reseta estatísticas
+        pontuacao: 0,
+        rebotes: 0,
+        assistencias: 0,
+        roubos: 0,
+        bloqueios: 0,
+        faltas: 0,
+        erros: 0,
+      });
+
       try {
         const timeRef = doc(db, "times", nomeTime);
         const timeSnap = await getDoc(timeRef);
@@ -82,11 +92,24 @@ const EditarJogador: React.FC = () => {
         setLoading(false);
       }
     };
+
     fetchJogadores();
   }, [nomeTime]);
 
   useEffect(() => {
-    if (!jogadorSelecionado) return;
+    if (!jogadorSelecionado) {
+      setEstatisticas({ // Reseta estatísticas ao mudar de jogador
+        pontuacao: 0,
+        rebotes: 0,
+        assistencias: 0,
+        roubos: 0,
+        bloqueios: 0,
+        faltas: 0,
+        erros: 0,
+      });
+      return;
+    }
+
     const jogador = jogadores.find((j) => j.id === jogadorSelecionado);
     if (jogador) {
       setEstatisticas({
@@ -99,23 +122,43 @@ const EditarJogador: React.FC = () => {
         erros: jogador.erros,
       });
     }
-  }, [jogadorSelecionado]);
+  }, [jogadorSelecionado, jogadores]);
 
-  const atualizarEstatisticas = async () => {
+  const atualizarEstatisticas = async (dados: Omit<Jogador, "id" | "nome">) => {
     if (!nomeTime || !jogadorSelecionado) {
       setError("Todos os campos são obrigatórios.");
       return;
     }
+
     setLoading(true);
     setError(null);
+
     try {
       const timeRef = doc(db, "times", nomeTime);
+      const timeSnap = await getDoc(timeRef);
+
+      if (!timeSnap.exists()) {
+        setError("Time não encontrado.");
+        return;
+      }
+
+      const timeData = timeSnap.data();
+      const jogadoresData = timeData.Jogadores || {};
+
+      const jogadorAtual = jogadoresData[jogadorSelecionado] || {};
+
+      const jogadorAtualizado = {
+        ...jogadorAtual, // Mantém os dados existentes
+        ...dados, // Atualiza apenas as estatísticas
+      };
+
       await updateDoc(timeRef, {
-        [`Jogadores.${jogadorSelecionado}`]: estatisticas,
+        [`Jogadores.${jogadorSelecionado}`]: jogadorAtualizado,
       });
-      setError("Estatísticas atualizadas com sucesso!");
+
+      setError("Estatísticas salvas com sucesso!");
     } catch (err) {
-      setError("Erro ao atualizar as estatísticas.");
+      setError("Erro ao salvar as estatísticas.");
     } finally {
       setLoading(false);
     }
@@ -133,6 +176,7 @@ const EditarJogador: React.FC = () => {
         onChange={(e) => setNomeTime(e.target.value)}
         className="w-56 p-2 rounded border border-gray-600 bg-gray-800 text-white mb-6"
       >
+        <option value="">Selecione um time</option>
         {times.map((time) => (
           <option key={time} value={time} className="text-gray-300">
             {time}
@@ -146,6 +190,7 @@ const EditarJogador: React.FC = () => {
           onChange={(e) => setJogadorSelecionado(e.target.value)}
           className="w-56 p-2 rounded border border-gray-600 bg-gray-800 text-white mb-6"
         >
+          <option value="">Selecione um jogador</option>
           {jogadores.map((jogador) => (
             <option key={jogador.id} value={jogador.id} className="text-gray-300">
               {jogador.nome}
@@ -172,7 +217,7 @@ const EditarJogador: React.FC = () => {
       ))}
 
       <button
-        onClick={atualizarEstatisticas}
+        onClick={() => atualizarEstatisticas(estatisticas)}
         disabled={loading}
         className="flex justify-center items-center px-5 h-12 bg-gray-500 text-blue font-semibold rounded-xl cursor-pointer hover:bg-blue hover:text-gray-900 transition-colors duration-300"
       >
