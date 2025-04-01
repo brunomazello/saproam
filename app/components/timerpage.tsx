@@ -64,13 +64,24 @@ export default function ContagemRegressiva() {
                 </span>
               </div>
               <span
-                className={`text-lg font-bold ${
+                className={`text-sm font-bold ${
                   temposRestantes[index] === "🔥 LIVE 🔴"
                     ? "text-[--color-danger] animate-pulse"
                     : "text-[--color-gray-100]"
-                } w-[80px] text-center`} // Adicionando largura fixa
+                } w-[150px] text-center`} // Adicionando largura fixa
               >
-                {temposRestantes[index]}
+                {temposRestantes[index] === "🔥 LIVE 🔴" ? (
+                  <a
+                    href="https://www.twitch.tv/verusexp" // Substitua pela URL da live
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-[--color-danger] animate-pulse hover:text-blue-500 text-sm font-bold cursor-pointer"
+                  >
+                    🔴 ASSISTIR LIVE 🔥
+                  </a>
+                ) : (
+                  temposRestantes[index]
+                )}
               </span>
             </li>
           ))}
@@ -81,7 +92,9 @@ export default function ContagemRegressiva() {
         </p>
       )}
       <div className="flex items-center w-full justify-end mt-4">
-        <a href="/calendario" className="hover:text-gray-300 hover:underline">Ver completo</a>
+        <a href="/calendario" className="hover:text-gray-300 hover:underline">
+          Ver completo
+        </a>
       </div>
     </div>
   );
