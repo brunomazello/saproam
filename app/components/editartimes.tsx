@@ -23,9 +23,12 @@ const EditarTime: React.FC = () => {
   const [nomeTime, setNomeTime] = useState<string>("");
   const [dono, setDono] = useState<string>("");
   const [jogadores, setJogadores] = useState<any[]>([]);
+  const [vitorias, setVitorias] = useState<number>(0);
+  const [derrotas, setDerrotas] = useState<number>(0);
   const [loading, setLoading] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
 
+  // Carregar os times do Firebase
   useEffect(() => {
     const fetchTimes = async () => {
       try {
@@ -39,6 +42,7 @@ const EditarTime: React.FC = () => {
     fetchTimes();
   }, []);
 
+  // Carregar os dados de um time específico
   const carregarDadosTime = async (nome: string) => {
     if (!nome) return;
     setLoading(true);
@@ -49,6 +53,8 @@ const EditarTime: React.FC = () => {
       if (timeSnap.exists()) {
         const data = timeSnap.data();
         setDono(data.Dono || "");
+        setVitorias(data.Vitorias || 0); // Carregar vitórias
+        setDerrotas(data.Derrota || 0); // Carregar derrotas
         setJogadores(
           Object.entries(data.Jogadores || {}).map(([key, value]: any) => ({
             id: key,
@@ -65,6 +71,7 @@ const EditarTime: React.FC = () => {
     }
   };
 
+  // Enviar os dados atualizados para o Firebase
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
@@ -75,7 +82,13 @@ const EditarTime: React.FC = () => {
         acc[jogador.id] = { Nome: jogador.Nome, Posição: jogador.Posição };
         return acc;
       }, {});
-      await updateDoc(timeRef, { Jogadores: jogadoresAtualizados });
+
+      await updateDoc(timeRef, {
+        Jogadores: jogadoresAtualizados,
+        Vitorias: vitorias,  // Atualizar vitórias
+        Derrotas: derrotas,  // Atualizar derrotas
+      });
+
       setError("Time atualizado com sucesso!");
     } catch (err) {
       setError("Erro ao atualizar o time.");
@@ -84,18 +97,21 @@ const EditarTime: React.FC = () => {
     }
   };
 
+  // Alterar dados do jogador
   const handleJogadorChange = (id: string, field: string, value: string) => {
     setJogadores(
       jogadores.map((j) => (j.id === id ? { ...j, [field]: value } : j))
     );
   };
 
+  // Adicionar jogador à lista
   const handleAdicionarJogador = (nome: string, posicao: string) => {
     if (!nome || !posicao) return;
     const slot = `Jogador${POSICOES.indexOf(posicao) + 1}`;
     setJogadores([...jogadores, { id: slot, Nome: nome, Posição: posicao }]);
   };
 
+  // Remover jogador da lista
   const handleRemoverJogador = (id: string) => {
     setJogadores(jogadores.filter((j) => j.id !== id));
   };
@@ -136,6 +152,28 @@ const EditarTime: React.FC = () => {
             required
           />
         </div>
+
+        {/* Campos para editar vitórias e derrotas */}
+        <div>
+          <label className="block text-gray-300">Vitórias</label>
+          <input
+            type="number"
+            value={vitorias}
+            onChange={(e) => setVitorias(Number(e.target.value) || 0)} // Garantir que o valor seja um número
+            className="w-full p-2 rounded border border-gray-600 bg-gray-800 text-white"
+          />
+        </div>
+        <div>
+          <label className="block text-gray-300">Derrotas</label>
+          <input
+            type="number"
+            value={derrotas}
+            onChange={(e) => setDerrotas(Number(e.target.value) || 0)} // Garantir que o valor seja um número
+            className="w-full p-2 rounded border border-gray-600 bg-gray-800 text-white"
+          />
+        </div>
+
+        {/* Lista de jogadores */}
         {jogadores.map((jogador) => (
           <div
             key={jogador.id}
@@ -165,12 +203,13 @@ const EditarTime: React.FC = () => {
             <button
               type="button"
               onClick={() => handleRemoverJogador(jogador.id)}
-              className="mt-2 px-3 py-1 bg-danger rounded text-white"
+              className="mt-8 px-3 py-1 bg-danger w-full rounded text-white"
             >
               Remover
             </button>
           </div>
         ))}
+
         <div className="flex w-full gap-4 md:flex-row flex-col">
           <button
             type="button"
