@@ -1,69 +1,73 @@
-// Calendario.tsx - Componente que exibe os jogos com React Table
-import { jogos, Jogo } from "./jogos";
-import { useMemo } from "react";
-import {
-  ColumnDef,
-  flexRender,
-  getCoreRowModel,
-  useReactTable,
-} from "@tanstack/react-table";
-import { Calendar } from "lucide-react";
+import { useState } from 'react';
+import { Button } from './button'; // Supondo que o Button esteja neste caminho
+import { jogos } from './jogos';
 
 export default function Calendario() {
-  const columns: ColumnDef<Jogo>[] = [
-    { accessorKey: "data", header: "Data" },
-    { accessorKey: "horario", header: "Horário" },
-    { accessorFn: (row) => `${row.time1} vs ${row.time2}`, header: "Times" },
-  ];
+  const [exibirJogos, setExibirJogos] = useState(5);
 
-  const table = useReactTable({
-    data: jogos,
-    columns,
-    getCoreRowModel: getCoreRowModel(),
-  });
+  const carregarMaisJogos = () => {
+    setExibirJogos((prev: number) => prev + 5);
+  };
+
+  const handleScroll = (e: React.UIEvent<HTMLDivElement>) => {
+    const { scrollTop, scrollHeight, clientHeight } = e.currentTarget;
+
+    if (scrollHeight - scrollTop === clientHeight) {
+      carregarMaisJogos();
+    }
+  };
+
+  const jogosDoMes = jogos;
 
   return (
-    <div className="p-6 max-w-3xl mx-auto">
+    <div className="p-6 max-w-3xl mx-auto" onScroll={handleScroll}>
       <div className="flex flex-col items-center">
-        <Calendar size={68}/>
         <h2 className="font-heading font-semibold text-gray-200 text-md text-3xl uppercase text-center mb-6 mt-6">
-          Calendário de jogos
+          Calendário de Jogos
         </h2>
       </div>
-      <div className="overflow-x-auto">
-        <table className="w-full border-collapse border border-gray-300 shadow-md">
-          <thead className="bg-gray-600">
-            {table.getHeaderGroups().map((headerGroup) => (
-              <tr key={headerGroup.id}>
-                {headerGroup.headers.map((header) => (
-                  <th
-                    key={header.id}
-                    className="border border-gray-300 px-4 py-2 text-center"
-                  >
-                    {flexRender(
-                      header.column.columnDef.header,
-                      header.getContext()
-                    )}
-                  </th>
-                ))}
-              </tr>
-            ))}
-          </thead>
-          <tbody>
-            {table.getRowModel().rows.map((row) => (
-              <tr key={row.id} className="hover:bg-gray-100 hover:text-black text-center">
-                {row.getVisibleCells().map((cell) => (
-                  <td
-                    key={cell.id}
-                    className="border border-gray-300 px-4 py-2"
-                  >
-                    {flexRender(cell.column.columnDef.cell, cell.getContext())}
-                  </td>
-                ))}
-              </tr>
-            ))}
-          </tbody>
-        </table>
+
+      <div className="space-y-4">
+        {jogosDoMes.slice(0, exibirJogos).map((jogo, index) => (
+          <div
+            key={index}
+            className="flex justify-between items-center border p-3 rounded-lg bg-[--color-gray-700] shadow-md hover:bg-gray-200 hover:transition-colors hover:text-black"
+          >
+            <div className="flex flex-col w-full">
+              <span className="font-semibold text-[--color-blue] flex flex-col md:block text-center">
+                <span className='text-2xl md:text-base md:flex md:items-center md:justify-center md:text-6xl'>{jogo.data}</span>
+                {jogo.time1} 🆚 {jogo.time2}
+                <span className="text-sm text-[--color-gray-300] md:flex md:justify-center">
+                  🕒 {jogo.horario}
+                </span>
+              </span>
+            </div>
+          </div>
+        ))}
+
+        {jogosDoMes.length > exibirJogos && (
+          <div className="text-center">
+            <button
+              onClick={carregarMaisJogos}
+              className="bg-[--color-blue] text-white py-2 px-4 rounded-md hover:bg-[--color-blue]/80 hover:cursor-pointer hover:text-gray-400 hover:underline"
+            >
+              Carregar mais jogos
+            </button>
+          </div>
+        )}
+
+        {/* Botão de Voltar para a Home */}
+        <div className="text-center flex justify-center">
+          <Button onClick={() => window.location.href = '/'}>
+            Voltar
+          </Button>
+        </div>
+
+        {jogosDoMes.length === 0 && (
+          <p className="text-center text-[--color-gray-300]">
+            📭 Nenhum jogo programado.
+          </p>
+        )}
       </div>
     </div>
   );

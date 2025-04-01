@@ -1,4 +1,4 @@
-'use client'
+"use client";
 
 import { useState, useEffect, useMemo } from "react";
 import { jogos } from "./jogos";
@@ -7,7 +7,10 @@ export default function ContagemRegressiva() {
   const hoje = new Date().toISOString().split("T")[0];
 
   // Memoriza os jogos do dia para evitar recriação em cada renderização
-  const jogosDoDia = useMemo(() => jogos.filter((jogo) => jogo.data === hoje), [hoje]);
+  const jogosDoDia = useMemo(
+    () => jogos.filter((jogo) => jogo.data === hoje),
+    [hoje]
+  );
 
   const calcularTempoRestante = (horario: string) => {
     const agora = new Date();
@@ -31,7 +34,9 @@ export default function ContagemRegressiva() {
 
   useEffect(() => {
     const intervalo = setInterval(() => {
-      setTemposRestantes(jogosDoDia.map((jogo) => calcularTempoRestante(jogo.horario)));
+      setTemposRestantes(
+        jogosDoDia.map((jogo) => calcularTempoRestante(jogo.horario))
+      );
     }, 60000); // Atualiza a cada minuto
 
     return () => clearInterval(intervalo);
@@ -53,9 +58,10 @@ export default function ContagemRegressiva() {
               <div className="flex flex-col ">
                 <span className="font-semibold text-[--color-blue] flex flex-col md:block">
                   {jogo.time1} 🆚 {jogo.time2}
-                  <span className="md:ml-6 text-sm text-[--color-gray-300]">🕒 {jogo.horario}</span>
+                  <span className="md:ml-6 text-sm text-[--color-gray-300]">
+                    🕒 {jogo.horario}
+                  </span>
                 </span>
-
               </div>
               <span
                 className={`text-lg font-bold ${
@@ -70,8 +76,13 @@ export default function ContagemRegressiva() {
           ))}
         </ul>
       ) : (
-        <p className="text-center text-[--color-gray-300]">📭 Nenhum jogo programado para hoje.</p>
+        <p className="text-center text-[--color-gray-300]">
+          📭 Nenhum jogo programado para hoje.
+        </p>
       )}
+      <div className="flex items-center w-full justify-end mt-4">
+        <a href="/calendario" className="hover:text-gray-300 hover:underline">Ver completo</a>
+      </div>
     </div>
   );
 }
