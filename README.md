@@ -1,34 +1,53 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# 🏀 NBA 2K Tournament Tracker 🏆
 
-## Getting Started
+Bem-vindo ao **NBA 2K Tournament Tracker**, um site para acompanhar torneios de NBA 2K! Aqui você pode visualizar informações detalhadas sobre os times, placares dos jogos, jogadores e rankings! 🎮🔥
 
-First, run the development server:
+## 🚀 Funcionalidades
+- 📌 **Times e Jogadores** – Veja os times participantes e as estatísticas dos jogadores.
+- 📊 **Tabela de Placar** – Acompanhe os resultados dos jogos e a classificação dos times.
+- 🏆 **Ranking Geral** – Descubra quem são os melhores jogadores e equipes do torneio.
+- 📅 **Calendário de Partidas** – Não perca nenhum jogo com nosso calendário interativo.
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+## 🛠️ Como Rodar o Projeto Localmente
+
+### 🔹 Pré-requisitos
+Antes de começar, certifique-se de ter instalado:
+- [Node.js](https://nodejs.org/) (v16+)
+- [npm](https://www.npmjs.com/) ou [yarn](https://yarnpkg.com/)
+
+### 📥 Clone o Repositório
+```sh
+ git clone https://github.com/seuusuario/nba2k-tournament.git
+ cd nba2k-tournament
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+### 📦 Instale as Dependências
+```sh
+ npm install  # ou yarn install
+```
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+### 🚀 Inicie o Servidor
+```sh
+ npm start  # ou yarn start
+```
+O site estará disponível em **http://localhost:3000** 🎯
 
-## Learn More
+## 🌍 Deploy
+O projeto pode ser hospedado em plataformas como:
+- [Vercel](https://vercel.com/)
+- [Netlify](https://www.netlify.com/)
+- [Heroku](https://www.heroku.com/)
 
-To learn more about Next.js, take a look at the following resources:
+## 🏗️ Tecnologias Utilizadas
+- ⚛️ **React.js** – Para a interface do usuário
+- 🎨 **Styled Components** – Estilização elegante
+- 📦 **Express.js** – Backend leve e eficiente
+- 🔥 **Firebase** – Para armazenamento de dados em tempo real
+- 📊 **Chart.js** – Visualização de estatísticas
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+## 📜 Licença
+Este projeto está sob a licença MIT. Veja mais detalhes em [`LICENSE`](LICENSE).
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+---
+🎮 **Acompanhe os placares, rankings e jogadores e fique por dentro do torneio!** 🏀🔥
 
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
