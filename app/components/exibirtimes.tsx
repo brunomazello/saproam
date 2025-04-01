@@ -90,7 +90,7 @@ const ExibirTimes: React.FC = () => {
     <div className="bg-gray-700 border border-gray-600 rounded-2xl p-8 space-y-6 h-auto mt-6 w-auto">
       <div className="flex items-center md:flex-row flex-col justify-center" >
         <User size={35} />
-        <h2 className="font-heading font-semibold text-gray-200 text-md ml-2.5 text-3xl md:mt-0 mt-6 uppercase">
+        <h2 className="font-heading font-semibold text-gray-200 text-md ml-2.5 md:text-3xl text-2xl md:mt-0 mt-6 uppercase">
           Times e Jogadores
         </h2>
       </div>
