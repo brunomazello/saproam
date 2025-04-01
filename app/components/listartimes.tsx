@@ -72,7 +72,7 @@ const ListarTimes: React.FC = () => {
         </thead>
         <tbody>
           {times.map((time) => (
-            <tr key={time.id} className="text-center">
+            <tr key={time.id} className="text-center hover:bg-gray-100 hover:text-black">
               <td className="px-4 py-2 border-b">{time.nome}</td>
               <td className="px-4 py-2 border-b">{time.vitorias}</td>
               <td className="px-4 py-2 border-b">{time.derrotas}</td>

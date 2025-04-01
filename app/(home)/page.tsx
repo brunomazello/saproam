@@ -35,6 +35,14 @@ export default function Home() {
         <div className="flex md:flex-col flex-col md:hidden">
           <TimerPage />
         </div>
+        <div className="flex md:flex-col flex-col md:hidden">
+          <ListarTimes />
+          <div className="flex items-center w-full justify-end mt-4">
+            <a href="/times" className="hover:text-gray-300 hover:underline mb-10">
+              Ver completo
+            </a>
+          </div>
+        </div>
         <div className="flex-1 bg-gray-700 border border-gray-600 rounded-2xl p-8 space-y-6">
           <div className="flex items-center justify-between md:justify-center">
             <h2 className="font-heading font-semibold text-gray-200 md:text-4xl text-2xl text-center md:text-center">
@@ -149,7 +157,7 @@ export default function Home() {
             </div>
           </div>
         </div>
-        <div className="flex md:flex-col flex-col block">
+        <div className="flex md:flex-col flex-col md:block hidden">
           <ListarTimes />
           <div className="flex items-center w-full justify-end mt-4">
             <a href="/times" className="hover:text-gray-300 hover:underline">
