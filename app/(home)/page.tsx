@@ -1,3 +1,5 @@
+"use client";
+
 import logo from "../assets/logo.png";
 import {
   LandPlot,
@@ -5,16 +7,19 @@ import {
   User,
   ShieldQuestion,
   ShieldAlert,
+  Calendar,
 } from "lucide-react";
 import { LinkButton } from "../components/button";
 import Image from "next/image";
 import AdComponent from "../components/AdComponent";
 import ListarTimes from "../components/listartimes";
 import ExibirTimes from "../components/exibirtimes";
+import FullCalendar from "@fullcalendar/react";
+import Calendario from "../components/fullcalendar";
+import TimerPage from "../components/timerpage";
 export default function Home() {
   return (
     <div className="min-h-dvh flex justify-center gap-8 flex-col md:mb-12">
-      
       <div className="flex flex-col md:mt-6 items-center md:items-center">
         <Image src={logo} alt="devstage" width={108.5} height={30} />
         <h1 className="text-4xl text-center leading-none font-heading font-medium flex flex-col md:text-7xl md:text-center mt-7">
@@ -22,7 +27,14 @@ export default function Home() {
           PRO-AM LEAGUE 2025
         </h1>
       </div>
+      <div className="flex md:flex-col flex-col md:block hidden">
+          <TimerPage />
+          {/* <ListarTimes /> */}
+        </div>
       <div className="flex gap-5 md:flex-row flex-col">
+        <div className="flex md:flex-col flex-col md:hidden">
+          <TimerPage />
+        </div>
         <div className="flex-1 bg-gray-700 border border-gray-600 rounded-2xl p-8 space-y-6">
           <div className="flex items-center justify-between md:justify-center">
             <h2 className="font-heading font-semibold text-gray-200 md:text-4xl text-2xl text-center md:text-center">
@@ -94,7 +106,7 @@ export default function Home() {
           </div>
 
           <p className="text-gray-300 leading-relaxed text-sm md:text-base text-center md:text-left">
-            Para participar do draft, o jogador precisa estar registrado. A
+            Para participar do <span className="font-bold underline">COMBINE</span>, o jogador precisa estar registrado. A
             inscrição de jogadores é gratuita.
           </p>
           <ol>
@@ -115,7 +127,7 @@ export default function Home() {
           <div className="flex items-center justify-center">
             <LinkButton href="https://forms.gle/hoTXNRXo8BLUtCPx7">
               <span className="mr-2.5">🔗</span>
-              Registre-se
+              Registrar-se no combine
             </LinkButton>
           </div>
           <div className="bg-gray-500 px-5 py-5 rounded-2xl">
@@ -136,9 +148,9 @@ export default function Home() {
             </div>
           </div>
         </div>
-        {/* <div className="flex md:flex-col">
-          <ListarTimes />
-        </div> */}
+        <div className="flex md:flex-col flex-col md:hidden block">
+          {/* <ListarTimes /> */}
+        </div>
       </div>
     </div>
   );

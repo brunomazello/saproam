@@ -15,7 +15,6 @@ export default function Home() {
   return (
     <div className="min-h-dvh flex justify-center gap-8 flex-col md:mb-12">
       <ListarTimes />
-      <ExibirTimes />
     </div>
   );
 }
