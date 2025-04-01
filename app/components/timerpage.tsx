@@ -1,0 +1,56 @@
+// pages/timer.tsx
+"use client";
+
+import { useState, useEffect } from "react";
+
+const TimerPage: React.FC = () => {
+  // Definindo o horário do primeiro jogo (data e hora)
+  const gameDate = new Date("2025-04-01T21:30:00"); // Exemplo de data: 5 de abril de 2025 às 21:30
+
+  const [timeRemaining, setTimeRemaining] = useState<number>(0);
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      const currentTime = new Date().getTime();
+      const remainingTime = gameDate.getTime() - currentTime;
+      
+      if (remainingTime <= 0) {
+        clearInterval(interval);
+      } else {
+        setTimeRemaining(remainingTime);
+      }
+    }, 1000);
+
+    return () => clearInterval(interval);
+  }, []);
+
+  const formatTime = (ms: number) => {
+    const hours = Math.floor(ms / (1000 * 60 * 60));
+    const minutes = Math.floor((ms % (1000 * 60 * 60)) / (1000 * 60));
+    const seconds = Math.floor((ms % (1000 * 60)) / 1000);
+    return `${hours}h ${minutes}m ${seconds}s`;
+  };
+
+  return (
+    <div className="flex items-center justify-center min-h-screen bg-gray-800 text-white">
+      <div className="text-center">
+        <h1 className="text-4xl font-bold mb-4">Contagem Regressiva para o Primeiro Jogo</h1>
+
+        {/* Exibindo a hora do primeiro jogo */}
+        <p className="text-xl font-medium mb-4">
+          O jogo será às: {gameDate.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+        </p>
+
+        {/* Exibindo a contagem regressiva */}
+        <div className="bg-blue-600 text-white p-6 rounded-lg shadow-lg">
+          <p className="text-lg">Faltam:</p>
+          <p className="text-4xl font-semibold">
+            {timeRemaining > 0 ? formatTime(timeRemaining) : "Jogo Iniciado!"}
+          </p>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+export default TimerPage;

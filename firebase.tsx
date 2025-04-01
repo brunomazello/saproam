@@ -9,6 +9,8 @@ import {
   setDoc,
   updateDoc,
   getDoc,
+  orderBy,
+  query
 } from "firebase/firestore";
 
 // Sua configuração do Firebase
@@ -27,7 +29,7 @@ const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
 
 // Funções exportadas
-export { collection, addDoc, getDocs, db, doc, setDoc, updateDoc, getDoc };
+export { collection, addDoc, getDocs, db, doc, setDoc, updateDoc, getDoc, orderBy, query };
 
 // Se você quiser exportar funções customizadas para manipular dados
 export async function adicionarTime(nome: string, pontos: number) {

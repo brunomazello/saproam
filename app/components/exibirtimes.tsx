@@ -13,6 +13,7 @@ interface Jogador {
   bloqueios: number;
   faltas: number;
   erros: number;
+  posicao: string;
 }
 
 interface Time {
@@ -20,6 +21,14 @@ interface Time {
   Nome: string;
   Jogadores: Jogador[];
 }
+
+const POSICOES_ORDEM = [
+  "Point Guard",  // PG
+  "Shooting Guard", // SG
+  "Small Forward",  // SF
+  "Power Forward",  // PF
+  "Center"          // C
+];
 
 const ExibirTimes: React.FC = () => {
   const [times, setTimes] = useState<Time[]>([]);
@@ -42,7 +51,10 @@ const ExibirTimes: React.FC = () => {
                 bloqueios: timeData.Jogadores[key].bloqueios || 0,
                 faltas: timeData.Jogadores[key].faltas || 0,
                 erros: timeData.Jogadores[key].erros || 0,
+                posicao: timeData.Jogadores[key].posicao || "N/A", // Posição do jogador
               }))
+            // Ordena os jogadores pela posição definida em POSICOES_ORDEM
+            .sort((a, b) => POSICOES_ORDEM.indexOf(a.posicao) - POSICOES_ORDEM.indexOf(b.posicao))
             : [];
 
           return { id: doc.id, Nome: timeData.Nome, Jogadores: jogadores };
