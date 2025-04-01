@@ -25,7 +25,7 @@ const EditarJogador: React.FC = () => {
 
   // Buscar lista de times no Firestore (simulação, você pode adaptar)
   useEffect(() => {
-    setTimes(["Time 1", "Time 2"]); // Exemplo estático, substitua pela busca no Firestore
+    setTimes(["Falcões", "Time 2"]); // Exemplo estático, substitua pela busca no Firestore
   }, []);
 
   // Buscar jogadores do time selecionado

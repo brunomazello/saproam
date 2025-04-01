@@ -9,6 +9,8 @@
     "lint": "next lint"
   },
   "dependencies": {
+    "@fullcalendar/daygrid": "^6.1.15",
+    "@fullcalendar/react": "^6.1.15",
     "@hookform/resolvers": "^4.1.0",
     "@netlify/plugin-nextjs": "^5.10.1",
     "@tailwindcss/postcss": "^4.0.6",

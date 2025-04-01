@@ -5,9 +5,10 @@ import { useState, useEffect } from "react";
 
 const TimerPage: React.FC = () => {
   // Definindo o horário do primeiro jogo (data e hora)
-  const gameDate = new Date("2025-04-01T21:30:00"); // Exemplo de data: 5 de abril de 2025 às 21:30
+  const gameDate = new Date("2025-03-31T21:30:00"); // Exemplo de data: 5 de abril de 2025 às 21:30
 
   const [timeRemaining, setTimeRemaining] = useState<number>(0);
+  const [hasGameStarted, setHasGameStarted] = useState<boolean>(false);
 
   useEffect(() => {
     const interval = setInterval(() => {
@@ -16,6 +17,8 @@ const TimerPage: React.FC = () => {
       
       if (remainingTime <= 0) {
         clearInterval(interval);
+        setTimeRemaining(0);
+        setHasGameStarted(true); // Marca que o jogo começou
       } else {
         setTimeRemaining(remainingTime);
       }
@@ -48,6 +51,22 @@ const TimerPage: React.FC = () => {
             {timeRemaining > 0 ? formatTime(timeRemaining) : "Jogo Iniciado!"}
           </p>
         </div>
+
+        {/* Exibir o embed da live da Twitch quando o jogo começar */}
+        {hasGameStarted && (
+          <div className="mt-8">
+            <h2 className="text-3xl font-bold text-white mb-4">Assista ao Jogo ao Vivo!</h2>
+            <iframe
+              src="https://player.twitch.tv/?channel=verusexp" // Substitua 'nome_do_canal' pelo nome do canal da Twitch
+              height="600"
+              width="100%"
+              frameBorder="0"
+              scrolling="no"
+              allowFullScreen={true}
+              title="Live da Twitch"
+            ></iframe>
+          </div>
+        )}
       </div>
     </div>
   );
