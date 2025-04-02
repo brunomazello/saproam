@@ -1,4 +1,4 @@
-"use client";
+'use client';
 
 import { useState } from "react";
 import Image from "next/image";
@@ -27,25 +27,22 @@ export default function AdminPage() {
 
   if (!logado) {
     return (
-      <div className="flex flex-col items-center justify-center min-h-screen">
-        <div className="flex flex-col md:mt-6 items-center md:items-center mb-10">
+      <div className="flex flex-col items-center justify-center min-h-screen bg-gray-800">
+        <div className="flex flex-col items-center mb-10">
           <Image src={logo} alt="devstage" width={108.5} height={30} />
-          <h1 className="text-4xl text-center leading-none font-heading font-medium flex flex-col md:text-7xl md:text-center mt-7">
-            <span>SOUTH AMERICA</span>
-            PRO-AM LEAGUE 2025
-          </h1>
+          <h1 className="text-4xl text-white font-heading font-medium mt-7">SOUTH AMERICA PRO-AM LEAGUE 2025</h1>
         </div>
-        <h2 className="text-lg font-bold mb-4">Área Administrativa</h2>
+        <h2 className="text-lg font-bold mb-4 text-white">Área Administrativa</h2>
         <input
           type="password"
           placeholder="Digite a senha"
           value={senha}
           onChange={(e) => setSenha(e.target.value)}
-          className="border rounded px-4 py-2 mb-2"
+          className="border-2 border-gray-500 rounded px-4 py-2 mb-2 text-white bg-gray-700"
         />
         <button
           onClick={handleLogin}
-          className="px-5 h-12 bg-gray-500 text-blue font-semibold rounded-xl w-auto cursor-pointer hover:bg-blue hover:text-gray-900 transition-colors duration-300 mt-6"
+          className="px-5 h-12 bg-blue text-white font-semibold rounded-xl w-auto cursor-pointer hover:bg-blue-700 mt-6"
         >
           Entrar
         </button>
@@ -54,42 +51,81 @@ export default function AdminPage() {
   }
 
   return (
-    <div className="min-h-screen flex flex-col items-center justify-center">
-      <h1 className="text-3xl mb-6 font-bold">Área Administrativa</h1>
+    <div className="min-h-screen bg-gray-900 text-white">
+      <nav className="flex justify-between items-center bg-gray-800 p-5">
+        <div className="flex items-center space-x-4">
+          <Image src={logo} alt="Logo" width={100} height={30} />
+          <span className="text-xl font-heading">Admin Panel</span>
+        </div>
+        <div className="hidden md:flex space-x-6">
+          <button
+            onClick={() => setSecaoAtiva("time")}
+            className="w-full px-4 py-2 bg-gray-500 text-blue rounded-xl hover:bg-blue-700 transition-colors"
+          >
+            Edição de Times
+          </button>
+          <button
+            onClick={() => setSecaoAtiva("jogador")}
+            className="w-full px-4 py-2 bg-gray-500 text-blue rounded-xl hover:bg-blue-700 transition-colors"
+          >
+            Edição de Jogadores
+          </button>
+          <button
+            onClick={() => setSecaoAtiva("jogo")}
+            className="w-full px-4 py-2 bg-gray-500 text-blue rounded-xl hover:bg-blue-700 transition-colors"
+          >
+            Edição de Jogos
+          </button>
+        </div>
+        {/* Menu Mobile */}
+        <div className="md:hidden">
+          <button onClick={() => setSecaoAtiva(null)} className="text-white p-5 y-5 bg-gray-500 text-blue rounded-xl hover:bg-blue-700 transition-colors">
+            Menu
+          </button>
+        </div>
+      </nav>
 
-      {/* Botões de navegação */}
-      <div className="flex space-x-4 mb-8">
+      {/* Menu Mobile Responsivo */}
+      <div className="md:hidden">
         <button
-          onClick={() => setSecaoAtiva("time")}
-          className="text-sm w-full flex text-center justify-between items-center px-5 h-12 bg-gray-500 text-blue font-semibold rounded-xl cursor-pointer hover:bg-blue hover:text-gray-900 transition-colors duration-300 mt-6"
+          onClick={() => setSecaoAtiva(null)}
+          className="hidden"
         >
-          Edição de Times
+          {secaoAtiva === null ? "Menu" : "Fechar Menu"}
         </button>
-        <button
-          onClick={() => setSecaoAtiva("jogador")}
-          className="text-sm w-full flex text-center justify-between items-center px-5 h-12 bg-gray-500 text-blue font-semibold rounded-xl cursor-pointer hover:bg-blue hover:text-gray-900 transition-colors duration-300 mt-6"
-        >
-          Edição de Jogadores
-        </button>
-        <button
-          onClick={() => setSecaoAtiva("jogo")}
-          className="text-sm w-full flex text-center justify-between items-center px-5 h-12 bg-gray-500 text-blue font-semibold rounded-xl cursor-pointer hover:bg-blue hover:text-gray-900 transition-colors duration-300 mt-6"
-        >
-          Edição de Jogos
-        </button>
+        {secaoAtiva === null && (
+          <div className="space-y-2 p-4">
+            <button
+              onClick={() => setSecaoAtiva("time")}
+              className="w-full px-4 py-2 bg-gray-500 text-blue rounded-xl hover:bg-blue-700 transition-colors"
+            >
+              Edição de Times
+            </button>
+            <button
+              onClick={() => setSecaoAtiva("jogador")}
+              className="w-full px-4 py-2 bg-gray-500 text-blue rounded-xl hover:bg-blue-700 transition-colors"
+            >
+              Edição de Jogadores
+            </button>
+            <button
+              onClick={() => setSecaoAtiva("jogo")}
+              className="w-full px-4 py-2 bg-gray-500 text-blue rounded-xl hover:bg-blue-700 transition-colors"
+            >
+              Edição de Jogos
+            </button>
+          </div>
+        )}
       </div>
 
-      {/* Conteúdo da seção ativa */}
-      <div className="w-full">
+      <div className="p-6">
+        {/* Conteúdo da seção ativa */}
         {secaoAtiva === "time" && <AdicionarTime />}
         {secaoAtiva === "jogador" && <EditarJogador />}
-        {secaoAtiva === "jogo" && <AdicionarJogo />} 
+        {secaoAtiva === "jogo" && <AdicionarJogo />}
+        {secaoAtiva === "time" && <EditarTime />}
+        {secaoAtiva === "jogo" && <EditarJogo />}
+        {secaoAtiva === "jogo" && <SendJogosButton />}
       </div>
-
-      {/* Seção para a edição de times */}
-      {secaoAtiva === "time" && <EditarTime />}
-      {secaoAtiva === "jogo" && <EditarJogo/>}
-      {secaoAtiva === "jogo" && <SendJogosButton/>}
     </div>
   );
 }
