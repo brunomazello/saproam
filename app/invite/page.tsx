@@ -1,3 +1,4 @@
+import RankingJogadores from "../components/rankingjogadores";
 import TimerPage from "../components/timerpage";
 
 export default function InvitePage() {
@@ -5,7 +6,7 @@ export default function InvitePage() {
 
   return (
     <div className="min-h-dvh flex items-center justify-between gap-16 flex-col md:flex-row">
-      <TimerPage />
+      <RankingJogadores/>
     </div>
   );
 }
