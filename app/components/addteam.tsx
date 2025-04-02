@@ -61,7 +61,7 @@ const CreateTime: React.FC = () => {
 
   return (
     <div>
-      <h2 className="font-heading font-semibold text-blue text-3xl mb-4 uppercase text-center md:text-left">
+      <h2 className="font-heading font-semibold text-blue text-3xl mb-4 uppercase text-center">
         Criar Time
       </h2>
       {error && <p className="text-red-500">{error}</p>}

@@ -1,3 +1,5 @@
+'use client'
+
 import { useState } from "react";
 import { db } from "../../firebase"; // Supondo que o Firestore esteja configurado corretamente
 import { doc, getDoc, updateDoc } from "firebase/firestore";
@@ -29,16 +31,21 @@ const AdicionarJogo = () => {
 
     try {
       // Acessando o documento "jogos" na coleção "calendario"
-      const docRef = doc(db, "calendario", "jogos");
+      const docRef = doc(db, "calendario", "jogos"); // Documento 'jogos' dentro de 'calendario'
       const docSnap = await getDoc(docRef);
 
       if (docSnap.exists()) {
-        const jogosList: Jogo[] = docSnap.data().jogos || [];  // Garantindo que jogosList tem o tipo Jogo[]
-        jogosList.push({ data, horario, time1, time2 });
+        const partidas = docSnap.data().partidas || {};  // Garantindo que partidas seja um objeto
 
-        // Atualiza o documento com os novos dados
+        // Geração de um ID único para a nova partida
+        const id = new Date().toISOString(); // Utilizando a data atual como ID, mas você pode usar algo mais robusto como o Firebase `push()` ou `doc().id`
+
+        // Adicionando a nova partida ao objeto 'partidas'
+        partidas[id] = { data, horario, time1, time2 };
+
+        // Atualiza o documento com a nova partida
         await updateDoc(docRef, {
-          jogos: jogosList,
+          partidas: partidas, // Atualizando o campo 'partidas' com o objeto atualizado
         });
 
         alert("Jogo adicionado com sucesso!");
@@ -58,12 +65,12 @@ const AdicionarJogo = () => {
   };
 
   return (
-    <div className="p-6 max-w-3xl mx-auto">
-      <h2 className="text-3xl font-semibold text-gray-200 text-center mb-6">
+    <div className="p-6 max-w-full mx-auto">
+      <h2 className="font-heading font-semibold text-blue text-3xl mb-4 uppercase text-center">
         Adicionar Jogos
       </h2>
 
-      <form onSubmit={handleSubmit} className="space-y-4">
+      <form onSubmit={handleSubmit} className="space-y-4 w-full">
         <div>
           <label htmlFor="data" className="text-gray-200">
             Data:
@@ -123,7 +130,7 @@ const AdicionarJogo = () => {
         <button
           type="submit"
           disabled={loading}
-          className="w-full px-5 h-12 bg-gray-500 text-blue font-semibold rounded-xl w-auto cursor-pointer hover:bg-blue hover:text-gray-900 transition-colors duration-300"
+          className="mt-10 w-full px-5 h-12 bg-gray-500 text-blue font-semibold rounded-xl w-auto cursor-pointer hover:bg-blue hover:text-gray-900 transition-colors duration-300"
         >
           {loading ? "Carregando..." : "Adicionar Jogo"}
         </button>

@@ -7,6 +7,8 @@ import AdicionarTime from "../components/addteam";
 import EditarTime from "../components/editartimes";
 import EditarJogador from "../components/editarjogador";
 import AdicionarJogo from "../components/adicionarjogo";
+import EditarJogo from "../components/editarjogo";
+import SendJogosButton from "../components/sendjogosbtn";
 
 export default function AdminPage() {
   const [senha, setSenha] = useState("");
@@ -86,6 +88,8 @@ export default function AdminPage() {
 
       {/* Seção para a edição de times */}
       {secaoAtiva === "time" && <EditarTime />}
+      {secaoAtiva === "jogo" && <EditarJogo/>}
+      {secaoAtiva === "jogo" && <SendJogosButton/>}
     </div>
   );
 }

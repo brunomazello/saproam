@@ -174,7 +174,7 @@ const EditarJogador: React.FC = () => {
       <select
         value={nomeTime}
         onChange={(e) => setNomeTime(e.target.value)}
-        className="w-56 p-2 rounded border border-gray-600 bg-gray-800 text-white mb-6"
+        className="w-full p-2 rounded border border-gray-600 bg-gray-800 text-white mb-6"
       >
         <option value="">Selecione um time</option>
         {times.map((time) => (
@@ -188,7 +188,7 @@ const EditarJogador: React.FC = () => {
         <select
           value={jogadorSelecionado}
           onChange={(e) => setJogadorSelecionado(e.target.value)}
-          className="w-56 p-2 rounded border border-gray-600 bg-gray-800 text-white mb-6"
+          className="w-full p-2 rounded border border-gray-600 bg-gray-800 text-white mb-6"
         >
           <option value="">Selecione um jogador</option>
           {jogadores.map((jogador) => (
@@ -200,7 +200,7 @@ const EditarJogador: React.FC = () => {
       )}
 
       {Object.keys(estatisticas).map((stat) => (
-        <div key={stat} className="mb-4">
+        <div key={stat} className="mb-4 w-full">
           <label className="block text-gray-300 capitalize">{stat}</label>
           <input
             type="number"
@@ -211,7 +211,7 @@ const EditarJogador: React.FC = () => {
                 [stat]: Number(e.target.value),
               }))
             }
-            className="w-56 p-2 rounded border border-gray-600 bg-gray-800 text-white"
+            className="w-full p-2 rounded border border-gray-600 bg-gray-800 text-white"
           />
         </div>
       ))}
@@ -219,7 +219,7 @@ const EditarJogador: React.FC = () => {
       <button
         onClick={() => atualizarEstatisticas(estatisticas)}
         disabled={loading}
-        className="flex justify-center items-center px-5 h-12 bg-gray-500 text-blue font-semibold rounded-xl cursor-pointer hover:bg-blue hover:text-gray-900 transition-colors duration-300"
+        className="mt-6 w-full flex justify-center items-center px-5 h-12 bg-gray-500 text-blue font-semibold rounded-xl cursor-pointer hover:bg-blue hover:text-gray-900 transition-colors duration-300"
       >
         {loading ? "Carregando..." : "Atualizar Estatísticas"}
       </button>

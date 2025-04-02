@@ -23,7 +23,23 @@ const Calendario = () => {
         const docSnap = await getDoc(docRef);
 
         if (docSnap.exists()) {
-          const jogosList = docSnap.data().jogos as Jogo[];  // Assegurando que jogosList tem o tipo Jogo[]
+          const jogosList: Jogo[] = [];
+
+          // Acessando as partidas dentro do documento 'jogos'
+          const partidas = docSnap.data().partidas;
+
+          // Iterando sobre as partidas para extrair os jogos
+          for (const key in partidas) {
+            if (partidas.hasOwnProperty(key)) {
+              const jogo = partidas[key];
+              jogosList.push({
+                data: jogo.data,
+                horario: jogo.horario,
+                time1: jogo.time1,
+                time2: jogo.time2,
+              });
+            }
+          }
 
           // Ordenando os jogos pela data (do mais antigo para o mais recente)
           jogosList.sort((a, b) => {

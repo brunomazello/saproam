@@ -6,9 +6,9 @@ export interface Jogo {
     time2: string;
   }
   
-  export const jogos: Jogo[] = [
-    { data: "2025-04-01", horario: "21:20", time1: "4REVIS", time2: "OKC" },
-    { data: "2025-04-01", horario: "21:20", time1: "Falcões", time2: "Firewolf" },
+  export const partidas: Jogo[] = [
+    { data: "2025-04-13", horario: "21:20", time1: "4REVIS", time2: "OKC" },
+    { data: "2025-04-02", horario: "21:20", time1: "Falcões", time2: "Firewolf" },
     { data: "2025-04-02", horario: "21:20", time1: "Super Dogs", time2: "Brazilian Delay" },
     { data: "2025-04-02", horario: "21:20", time1: "Los Perro Loco", time2: "OKC" },
     { data: "2025-04-03", horario: "21:20", time1: "Los Perro Loco", time2: "Firewolf" },

@@ -40,10 +40,26 @@ const ContagemRegressiva = () => {
         // Acessando o documento "jogos" dentro da coleção "calendario"
         const docRef = doc(db, "calendario", "jogos");
         const docSnap = await getDoc(docRef);
-  
+
         if (docSnap.exists()) {
-          const jogosList = docSnap.data().jogos as Jogo[];
-  
+          const jogosList: Jogo[] = [];
+
+          // Acessando as partidas dentro do documento 'jogos'
+          const partidas = docSnap.data().partidas;
+
+          // Iterando sobre as partidas para extrair os jogos
+          for (const key in partidas) {
+            if (partidas.hasOwnProperty(key)) {
+              const jogo = partidas[key];
+              jogosList.push({
+                data: jogo.data,
+                horario: jogo.horario,
+                time1: jogo.time1,
+                time2: jogo.time2,
+              });
+            }
+          }
+
           // Definindo a data de hoje no fuso horário de Brasília (GMT-3)
           const hoje = new Date();
           const hojeBrasil = new Intl.DateTimeFormat("pt-BR", {
@@ -54,15 +70,13 @@ const ContagemRegressiva = () => {
           }).format(hoje);  // "DD/MM/YYYY"
           
           const hojeStr = hojeBrasil.split("/").reverse().join("-"); // Formato "YYYY-MM-DD"
-  
-  
+
           // Filtra os jogos que têm a mesma data de hoje
           const jogosDoDiaAtual = jogosList.filter(jogo => {
             const dataJogo = jogo.data;  // A data do Firestore já está no formato "YYYY-MM-DD"
-  
             return dataJogo === hojeStr;  // Comparação de datas no formato "YYYY-MM-DD"
           });
-  
+
           setJogosDoDia(jogosDoDiaAtual);
           setTemposRestantes(jogosDoDiaAtual.map(jogo => calcularTempoRestante(jogo.horario)));
         } else {
@@ -72,11 +86,9 @@ const ContagemRegressiva = () => {
         console.error("Erro ao carregar jogos:", error);
       }
     };
-  
+
     fetchJogos();
   }, []);  // Executa quando o componente é montado
- 
-  
 
   useEffect(() => {
     const intervalo = setInterval(() => {
@@ -95,13 +107,13 @@ const ContagemRegressiva = () => {
       </h2>
 
       {jogosDoDia.length > 0 ? (
-        <ul className="space-y-4 ">
+        <ul className="space-y-4">
           {jogosDoDia.map((jogo, index) => (
             <li
               key={index}
               className="flex justify-between items-center border p-3 rounded-lg bg-[--color-gray-700] shadow-md hover:bg-gray-200 hover:transition-colors hover:text-black"
             >
-              <div className="flex flex-col ">
+              <div className="flex flex-col">
                 <span className="font-semibold text-[--color-blue] flex flex-col md:block">
                   {jogo.time1} 🆚 {jogo.time2}
                   <span className="md:ml-6 text-sm text-[--color-gray-300]">
