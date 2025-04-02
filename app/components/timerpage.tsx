@@ -113,7 +113,7 @@ const ContagemRegressiva = () => {
               key={index}
               className="flex justify-between items-center border p-3 rounded-lg bg-[--color-gray-700] shadow-md hover:bg-gray-200 hover:transition-colors hover:text-black"
             >
-              <div className="flex flex-col">
+              <div className="flex flex-col w-full">
                 <span className="font-semibold text-[--color-blue] flex flex-col md:block">
                   {jogo.time1} 🆚 {jogo.time2}
                   <span className="md:ml-6 text-sm text-[--color-gray-300]">
