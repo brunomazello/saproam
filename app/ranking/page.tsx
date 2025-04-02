@@ -4,7 +4,7 @@ import ListarTimes from "../components/listartimes";
 import RankingJogadores from "../components/rankingjogadores";
 export default function Home() {
   return (
-    <div className="min-h-dvh flex justify-center gap-8 flex-col md:mb-12 mt-12">
+    <div className="min-h-dvh flex justify-center gap-8 flex-col md:mb-12 mt-12 md:mt-24">
       <ListarTimes />
       <RankingJogadores/>
       <div className="text-center flex justify-center">

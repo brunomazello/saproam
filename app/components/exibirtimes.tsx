@@ -91,7 +91,7 @@ const ExibirTimes: React.FC = () => {
   }, []);
 
   return (
-    <div className="bg-gray-700 border border-gray-600 rounded-2xl p-8 space-y-6 h-auto mt-6 w-auto mt-12">
+    <div className="bg-gray-700 border border-gray-600 rounded-2xl p-8 space-y-6 h-auto mt-6 w-auto mt-12 md:mt-24">
       <div className="flex items-center md:flex-row flex-col justify-center" >
         <User size={35} />
         <h2 className="font-heading font-semibold text-gray-200 text-md ml-2.5 md:text-3xl text-2xl md:mt-0 mt-6 uppercase">

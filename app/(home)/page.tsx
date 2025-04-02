@@ -20,7 +20,7 @@ import TimerPage from "../components/timerpage";
 import RegrasLink from "../components/regraslink";
 export default function Home() {
   return (
-    <div className="min-h-dvh flex justify-center gap-8 flex-col md:mb-12 mt-12">
+    <div className="min-h-dvh flex justify-center gap-8 flex-col md:mb-12 mt-16">
       <div className="flex flex-col md:mt-6 items-center md:items-center">
         <Image src={logo} alt="devstage" width={108.5} height={30} />
         <h1 className="text-4xl text-center leading-none font-heading font-medium flex flex-col md:text-7xl md:text-center mt-7">

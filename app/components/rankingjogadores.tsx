@@ -109,7 +109,7 @@ const RankingJogadores: React.FC = () => {
   };
 
   return (
-    <div className="bg-gray-700 border border-gray-600 rounded-2xl p-6 w-full">
+    <div className="bg-gray-700 border border-gray-600 rounded-2xl p-6 w-full ">
       <div className="flex items-center justify-center mb-10 items-center">
         <Crown size={30} />
         <h2 className="font-heading font-semibold text-gray-200 ml-2 text-xl sm:text-3xl uppercase">

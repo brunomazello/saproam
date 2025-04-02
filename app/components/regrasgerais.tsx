@@ -13,7 +13,7 @@ import {
 import Link from "next/link";
 export default function RegrasGerais() {
   return (
-    <div className="bg-gray-700 border border-gray-600 rounded-2xl p-8 space-y-6 h-auto w-full mt-10 w-auto">
+    <div className="bg-gray-700 border border-gray-600 rounded-2xl p-8 space-y-6 h-auto w-full">
       <div className="flex items-center justify-between md:justify-center">
         <h2 className="font-heading font-semibold text-gray-300 md:text-4xl text-2xl text-center">
           Regras Gerais - 1ª Temporada
@@ -43,11 +43,11 @@ export default function RegrasGerais() {
 
       <div className="flex flex-col md:flex-row md:justify-normal items-center justify-center">
         <CircleGauge className="w-16 h-16 md:w-8 md:h-8" />
-        <h2 className="font-heading font-semibold text-gray-300 text-xl md:ml-2.5 text-justify  mt-4 md:mt-0">
+        <h2 className="font-heading font-semibold text-gray-300 text-xl md:ml-2.5 text-center  mt-4 md:mt-0">
           Desempate
         </h2>
       </div>
-      <ol className="text-gray-300 leading-relaxed text-sm md:text-base text-justify  list-decimal list-inside">
+      <ol className="text-gray-300 leading-relaxed text-sm md:text-base text-center  list-decimal list-inside">
         <li>Confronto direto;</li>
         <li>Saldo de pontos;</li>
         <li>Pontos feitos;</li>
