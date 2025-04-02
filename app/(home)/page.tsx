@@ -39,7 +39,7 @@ export default function Home() {
         <div className="flex md:flex-col flex-col md:hidden">
           <ListarTimes />
           <div className="flex items-center w-full justify-end mt-4">
-            <a href="/times" className="hover:text-gray-300 hover:underline mb-10">
+            <a href="/ranking" className="hover:text-gray-300 hover:underline mb-10">
               Ver completo
             </a>
           </div>
@@ -160,9 +160,8 @@ export default function Home() {
         </div>
         <div className="flex md:flex-col flex-col md:block hidden">
           <ListarTimes />
-          <RegrasLink/>
           <div className="flex items-center w-full justify-end mt-4">
-            <a href="/times" className="hover:text-gray-300 hover:underline">
+            <a href="/ranking" className="hover:text-gray-300 hover:underline">
               Ver completo
             </a>
           </div>
