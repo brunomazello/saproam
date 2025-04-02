@@ -193,7 +193,14 @@ const RankingJogadores: React.FC = () => {
                 key={index}
                 className="text-center hover:bg-gray-100 hover:text-black"
               >
-                <td className="px-2 py-2 border-b">{jogador.nome}</td>
+                <td className="px-2 py-2 border-b">
+                  <a
+                    href={`/jogadores/${encodeURIComponent(jogador.nome)}`}
+                    className="text-blue-400 hover:underline"
+                  >
+                    {jogador.nome}
+                  </a>
+                </td>
                 <td className="px-2 py-2 border-b">{jogador.posicao}</td>
                 <td className="px-2 py-2 border-b">{jogador.pontuacao}</td>
                 <td className="px-2 py-2 border-b">{jogador.assistencias}</td>
