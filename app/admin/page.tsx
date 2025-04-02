@@ -6,6 +6,9 @@ import EditarTime from "../components/editartimes";
 import EditarJogador from "../components/editarjogador";
 import Image from "next/image";
 import logo from "../assets/logo.png";
+import AdicionarJogo from "../components/adicionarjogo";
+import SendJogosButton from "../components/sendjogosbtn";
+import RemoverJogo from "../components/removerjogo";
 
 export default function AdminPage() {
   const [senha, setSenha] = useState("");
@@ -53,6 +56,8 @@ export default function AdminPage() {
       <AdicionarTime />
       <EditarTime />
       <EditarJogador /> 
+      <AdicionarJogo/>
+      <SendJogosButton/>
     </div>
   );
 }

@@ -1,17 +1,24 @@
-"use client";
+'use client'
 
-import { useState, useEffect, useMemo } from "react";
-import { jogos } from "./jogos";
+import { useState, useEffect } from "react";
+import { db } from "../../firebase";
+import { doc, getDoc } from "firebase/firestore";
 
-export default function ContagemRegressiva() {
-  const hoje = new Date().toISOString().split("T")[0];
+// Definindo o tipo Jogo
+interface Jogo {
+  data: string;
+  horario: string;
+  time1: string;
+  time2: string;
+}
 
-  // Memoriza os jogos do dia para evitar recriação em cada renderização
-  const jogosDoDia = useMemo(
-    () => jogos.filter((jogo) => jogo.data === hoje),
-    [hoje]
-  );
+const ContagemRegressiva = () => {
+  const hoje = new Date().toISOString().split("T")[0];  // No formato YYYY-MM-DD
 
+  const [jogosDoDia, setJogosDoDia] = useState<Jogo[]>([]); // Lista de jogos do dia
+  const [temposRestantes, setTemposRestantes] = useState<string[]>([]); // Tempos restantes para cada jogo
+
+  // Função para calcular o tempo restante
   const calcularTempoRestante = (horario: string) => {
     const agora = new Date();
     const [hora, minuto] = horario.split(":").map(Number);
@@ -27,10 +34,49 @@ export default function ContagemRegressiva() {
     return `${horas}h ${minutos}m`;
   };
 
-  // Inicializa os tempos restantes
-  const [temposRestantes, setTemposRestantes] = useState(() =>
-    jogosDoDia.map((jogo) => calcularTempoRestante(jogo.horario))
-  );
+  useEffect(() => {
+    const fetchJogos = async () => {
+      try {
+        // Acessando o documento "jogos" dentro da coleção "calendario"
+        const docRef = doc(db, "calendario", "jogos");
+        const docSnap = await getDoc(docRef);
+  
+        if (docSnap.exists()) {
+          const jogosList = docSnap.data().jogos as Jogo[];
+  
+          // Definindo a data de hoje no fuso horário de Brasília (GMT-3)
+          const hoje = new Date();
+          const hojeBrasil = new Intl.DateTimeFormat("pt-BR", {
+            timeZone: "America/Sao_Paulo",
+            year: "numeric",
+            month: "2-digit",
+            day: "2-digit",
+          }).format(hoje);  // "DD/MM/YYYY"
+          
+          const hojeStr = hojeBrasil.split("/").reverse().join("-"); // Formato "YYYY-MM-DD"
+  
+  
+          // Filtra os jogos que têm a mesma data de hoje
+          const jogosDoDiaAtual = jogosList.filter(jogo => {
+            const dataJogo = jogo.data;  // A data do Firestore já está no formato "YYYY-MM-DD"
+  
+            return dataJogo === hojeStr;  // Comparação de datas no formato "YYYY-MM-DD"
+          });
+  
+          setJogosDoDia(jogosDoDiaAtual);
+          setTemposRestantes(jogosDoDiaAtual.map(jogo => calcularTempoRestante(jogo.horario)));
+        } else {
+          console.log("Documento 'jogos' não encontrado!");
+        }
+      } catch (error) {
+        console.error("Erro ao carregar jogos:", error);
+      }
+    };
+  
+    fetchJogos();
+  }, []);  // Executa quando o componente é montado
+ 
+  
 
   useEffect(() => {
     const intervalo = setInterval(() => {
@@ -64,8 +110,7 @@ export default function ContagemRegressiva() {
                 </span>
               </div>
               <span
-                className={`text-sm font-bold ${
-                  temposRestantes[index] === "🔥 LIVE 🔴"
+                className={`text-sm font-bold ${temposRestantes[index] === "🔥 LIVE 🔴"
                     ? "text-[--color-danger] animate-pulse"
                     : "text-[--color-gray-100]"
                 } w-[150px] text-center`} // Adicionando largura fixa
@@ -91,6 +136,7 @@ export default function ContagemRegressiva() {
           📭 Nenhum jogo programado para hoje.
         </p>
       )}
+
       <div className="flex items-center w-full justify-end mt-4">
         <a href="/calendario" className="hover:text-gray-300 hover:underline">
           Ver completo
@@ -98,4 +144,6 @@ export default function ContagemRegressiva() {
       </div>
     </div>
   );
-}
+};
+
+export default ContagemRegressiva;

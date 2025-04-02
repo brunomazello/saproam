@@ -1,9 +1,50 @@
-import { useState } from 'react';
-import { Button } from './button'; // Supondo que o Button esteja neste caminho
-import { jogos } from './jogos';
+import { useEffect, useState } from "react";
+import { db } from "../../firebase";
+import { doc, getDoc } from "firebase/firestore";
+import { Button } from './button';  // Supondo que o Button esteja neste caminho
 
-export default function Calendario() {
+// Definindo o tipo Jogo
+interface Jogo {
+  data: string;
+  horario: string;
+  time1: string;
+  time2: string;
+}
+
+const Calendario = () => {
+  const [jogosDoMes, setJogosDoMes] = useState<Jogo[]>([]);  // Tipando o estado de jogos
   const [exibirJogos, setExibirJogos] = useState(5);
+
+  useEffect(() => {
+    const fetchJogos = async () => {
+      try {
+        // Acessando o documento "jogos" dentro da coleção "calendario"
+        const docRef = doc(db, "calendario", "jogos");
+        const docSnap = await getDoc(docRef);
+
+        if (docSnap.exists()) {
+          const jogosList = docSnap.data().jogos as Jogo[];  // Assegurando que jogosList tem o tipo Jogo[]
+
+          // Ordenando os jogos pela data (do mais antigo para o mais recente)
+          jogosList.sort((a, b) => {
+            // Converter as datas para objetos Date e comparar
+            const dataA = new Date(a.data);
+            const dataB = new Date(b.data);
+
+            return dataA.getTime() - dataB.getTime(); // Comparação para ordem crescente
+          });
+
+          setJogosDoMes(jogosList);
+        } else {
+          console.log("Documento 'jogos' não encontrado!");
+        }
+      } catch (error) {
+        console.error("Erro ao carregar jogos:", error);
+      }
+    };
+
+    fetchJogos();
+  }, []);  // O efeito será executado apenas uma vez após o componente ser montado
 
   const carregarMaisJogos = () => {
     setExibirJogos((prev: number) => prev + 5);
@@ -16,8 +57,6 @@ export default function Calendario() {
       carregarMaisJogos();
     }
   };
-
-  const jogosDoMes = jogos;
 
   return (
     <div className="p-6 max-w-3xl mx-auto" onScroll={handleScroll}>
@@ -56,19 +95,12 @@ export default function Calendario() {
           </div>
         )}
 
-        {/* Botão de Voltar para a Home */}
         <div className="text-center flex justify-center">
-          <Button onClick={() => window.location.href = '/'}>
-            Voltar
-          </Button>
+          <Button onClick={() => window.location.href = '/'}>Voltar</Button>
         </div>
-
-        {jogosDoMes.length === 0 && (
-          <p className="text-center text-[--color-gray-300]">
-            📭 Nenhum jogo programado.
-          </p>
-        )}
       </div>
     </div>
   );
-}
+};
+
+export default Calendario;
