@@ -75,7 +75,7 @@ const CreateTime: React.FC = () => {
             id="nome"
             value={nome}
             onChange={(e) => setNome(e.target.value)}
-            className="w-56 p-2 rounded border border-gray-600 bg-gray-800 text-white"
+            className="w-full p-2 rounded border border-gray-600 bg-gray-800 text-white"
             required
           />
         </div>
@@ -88,7 +88,7 @@ const CreateTime: React.FC = () => {
             id="vitorias"
             value={vitorias}
             onChange={(e) => setVitorias(Number(e.target.value))}
-            className="w-56 p-2 rounded border border-gray-600 bg-gray-800 text-white"
+            className="w-full p-2 rounded border border-gray-600 bg-gray-800 text-white"
             required
           />
         </div>
@@ -101,7 +101,7 @@ const CreateTime: React.FC = () => {
             id="derrotas"
             value={derrotas}
             onChange={(e) => setDerrotas(Number(e.target.value))}
-            className="w-56 p-2 rounded border border-gray-600 bg-gray-800 text-white"
+            className="w-full p-2 rounded border border-gray-600 bg-gray-800 text-white"
             required
           />
         </div>
@@ -114,7 +114,7 @@ const CreateTime: React.FC = () => {
             id="jogador1"
             value={jogador1}
             onChange={(e) => setJogador1(e.target.value)}
-            className="w-56 p-2 rounded border border-gray-600 bg-gray-800 text-white"
+            className="w-full p-2 rounded border border-gray-600 bg-gray-800 text-white"
             required
           />
         </div>
@@ -127,7 +127,7 @@ const CreateTime: React.FC = () => {
             id="jogador2"
             value={jogador2}
             onChange={(e) => setJogador2(e.target.value)}
-            className="w-56 p-2 rounded border border-gray-600 bg-gray-800 text-white"
+            className="w-full p-2 rounded border border-gray-600 bg-gray-800 text-white"
             required
           />
         </div>
@@ -140,7 +140,7 @@ const CreateTime: React.FC = () => {
             id="jogador3"
             value={jogador3}
             onChange={(e) => setJogador3(e.target.value)}
-            className="w-56 p-2 rounded border border-gray-600 bg-gray-800 text-white"
+            className="w-full p-2 rounded border border-gray-600 bg-gray-800 text-white"
             required
           />
         </div>
@@ -153,7 +153,7 @@ const CreateTime: React.FC = () => {
             id="jogador4"
             value={jogador4}
             onChange={(e) => setJogador4(e.target.value)}
-            className="w-56 p-2 rounded border border-gray-600 bg-gray-800 text-white"
+            className="w-full p-2 rounded border border-gray-600 bg-gray-800 text-white"
             required
           />
         </div>
@@ -166,15 +166,15 @@ const CreateTime: React.FC = () => {
             id="jogador5"
             value={jogador5}
             onChange={(e) => setJogador5(e.target.value)}
-            className="w-56 p-2 rounded border border-gray-600 bg-gray-800 text-white"
+            className="w-full p-2 rounded border border-gray-600 bg-gray-800 text-white"
             required
           />
         </div>
-        <div className="flex justify-center">
+        <div className="flex justify-center items-center">
         <button
           type="submit"
           disabled={loading}
-          className="flex justify-between items-center px-5 h-12 bg-gray-500 text-blue font-semibold rounded-xl w-auto cursor-pointer hover:bg-blue hover:text-gray-900 transition-colors duration-300 mt-6"
+          className="w-full flex text-center justify-between items-center px-5 h-12 bg-gray-500 text-blue font-semibold rounded-xl cursor-pointer hover:bg-blue hover:text-gray-900 transition-colors duration-300 mt-6"
         >
           {loading ? "Carregando..." : "Criar Time"}
         </button>

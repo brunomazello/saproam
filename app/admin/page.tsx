@@ -1,20 +1,20 @@
 "use client";
 
 import { useState } from "react";
+import Image from "next/image";
+import logo from "../assets/logo.png";
 import AdicionarTime from "../components/addteam";
 import EditarTime from "../components/editartimes";
 import EditarJogador from "../components/editarjogador";
-import Image from "next/image";
-import logo from "../assets/logo.png";
 import AdicionarJogo from "../components/adicionarjogo";
-import SendJogosButton from "../components/sendjogosbtn";
-import RemoverJogo from "../components/removerjogo";
 
 export default function AdminPage() {
   const [senha, setSenha] = useState("");
   const [logado, setLogado] = useState(false);
-  const senhaCorreta = "SAPM@ADM2025"; // Altere para uma senha mais segura
+  const [secaoAtiva, setSecaoAtiva] = useState<"time" | "jogador" | "jogo" | null>(null);
+  const senhaCorreta = process.env.NEXT_PUBLIC_ADMIN_PASSWORD;
 
+  // Função de login
   const handleLogin = () => {
     if (senha === senhaCorreta) {
       setLogado(true);
@@ -52,11 +52,40 @@ export default function AdminPage() {
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-between gap-16 flex-col md:flex-row">
-      <AdicionarTime />
-      <EditarTime />
-      <EditarJogador /> 
-      <AdicionarJogo/>
+    <div className="min-h-screen flex flex-col items-center justify-center">
+      <h1 className="text-3xl mb-6 font-bold">Área Administrativa</h1>
+
+      {/* Botões de navegação */}
+      <div className="flex space-x-4 mb-8">
+        <button
+          onClick={() => setSecaoAtiva("time")}
+          className="text-sm w-full flex text-center justify-between items-center px-5 h-12 bg-gray-500 text-blue font-semibold rounded-xl cursor-pointer hover:bg-blue hover:text-gray-900 transition-colors duration-300 mt-6"
+        >
+          Edição de Times
+        </button>
+        <button
+          onClick={() => setSecaoAtiva("jogador")}
+          className="text-sm w-full flex text-center justify-between items-center px-5 h-12 bg-gray-500 text-blue font-semibold rounded-xl cursor-pointer hover:bg-blue hover:text-gray-900 transition-colors duration-300 mt-6"
+        >
+          Edição de Jogadores
+        </button>
+        <button
+          onClick={() => setSecaoAtiva("jogo")}
+          className="text-sm w-full flex text-center justify-between items-center px-5 h-12 bg-gray-500 text-blue font-semibold rounded-xl cursor-pointer hover:bg-blue hover:text-gray-900 transition-colors duration-300 mt-6"
+        >
+          Edição de Jogos
+        </button>
+      </div>
+
+      {/* Conteúdo da seção ativa */}
+      <div className="w-full">
+        {secaoAtiva === "time" && <AdicionarTime />}
+        {secaoAtiva === "jogador" && <EditarJogador />}
+        {secaoAtiva === "jogo" && <AdicionarJogo />}
+      </div>
+
+      {/* Seção para a edição de times */}
+      {secaoAtiva === "time" && <EditarTime />}
     </div>
   );
 }

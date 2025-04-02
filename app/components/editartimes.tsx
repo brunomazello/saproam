@@ -117,12 +117,12 @@ const EditarTime: React.FC = () => {
   };
 
   return (
-    <div className="flex flex-col items-center p-6 rounded-xl text-gray-200 w-full mx-auto shadow-lg">
+    <div className="flex flex-col items-center rounded-xl text-gray-200 w-full mx-auto shadow-lg mt-20">
       <h2 className="font-heading font-semibold text-blue text-3xl mb-4 uppercase">
         Editar Time
       </h2>
       {error && <p className="text-danger text-sm mb-3">{error}</p>}
-      <form onSubmit={handleSubmit} className="space-y-4">
+      <form onSubmit={handleSubmit} className="space-y-4 w-full">
         <div>
           <label className="block text-gray-300">Nome do Time</label>
           <select
