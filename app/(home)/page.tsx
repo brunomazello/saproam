@@ -17,9 +17,10 @@ import ExibirTimes from "../components/exibirtimes";
 import FullCalendar from "@fullcalendar/react";
 import Calendario from "../components/fullcalendar";
 import TimerPage from "../components/timerpage";
+import RegrasLink from "../components/regraslink";
 export default function Home() {
   return (
-    <div className="min-h-dvh flex justify-center gap-8 flex-col md:mb-12">
+    <div className="min-h-dvh flex justify-center gap-8 flex-col md:mb-12 mt-12">
       <div className="flex flex-col md:mt-6 items-center md:items-center">
         <Image src={logo} alt="devstage" width={108.5} height={30} />
         <h1 className="text-4xl text-center leading-none font-heading font-medium flex flex-col md:text-7xl md:text-center mt-7">
@@ -159,6 +160,7 @@ export default function Home() {
         </div>
         <div className="flex md:flex-col flex-col md:block hidden">
           <ListarTimes />
+          <RegrasLink/>
           <div className="flex items-center w-full justify-end mt-4">
             <a href="/times" className="hover:text-gray-300 hover:underline">
               Ver completo
