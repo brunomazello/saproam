@@ -57,7 +57,6 @@ export default function AdminPage() {
       <EditarTime />
       <EditarJogador /> 
       <AdicionarJogo/>
-      <SendJogosButton/>
     </div>
   );
 }
