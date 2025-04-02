@@ -83,7 +83,7 @@ export default function AdminPage() {
       <div className="w-full">
         {secaoAtiva === "time" && <AdicionarTime />}
         {secaoAtiva === "jogador" && <EditarJogador />}
-        {secaoAtiva === "jogo" && <AdicionarJogo />}
+        {secaoAtiva === "jogo" && <AdicionarJogo />} 
       </div>
 
       {/* Seção para a edição de times */}
