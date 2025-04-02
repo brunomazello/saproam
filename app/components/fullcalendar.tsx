@@ -11,6 +11,12 @@ interface Jogo {
   time2: string;
 }
 
+// Função para formatar a data no formato DD-MM-YYYY
+const formatarData = (data: string): string => {
+  const [ano, mes, dia] = data.split("-"); // Dividir a string no formato YYYY-MM-DD
+  return `${dia}-${mes}-${ano}`; // Retornar no formato DD-MM-YYYY
+};
+
 const Calendario = () => {
   const [jogosDoMes, setJogosDoMes] = useState<Jogo[]>([]);  // Tipando o estado de jogos
   const [exibirJogos, setExibirJogos] = useState(5);
@@ -90,7 +96,7 @@ const Calendario = () => {
           >
             <div className="flex flex-col w-full">
               <span className="font-semibold text-[--color-blue] flex flex-col md:block text-center">
-                <span className='text-2xl md:text-base md:flex md:items-center md:justify-center md:text-6xl'>{jogo.data}</span>
+                <span className='text-2xl md:text-base md:flex md:items-center md:justify-center md:text-6xl'>{formatarData(jogo.data)}</span>
                 {jogo.time1} 🆚 {jogo.time2}
                 <span className="text-sm text-[--color-gray-300] md:flex md:justify-center">
                   🕒 {jogo.horario}
