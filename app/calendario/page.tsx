@@ -16,7 +16,7 @@ import FullCalendar from "@fullcalendar/react";
 import Calendario from "../components/fullcalendar";
 export default function Home() {
   return (
-    <div className="min-h-dvh flex justify-center gap-8 flex-col md:mb-12">
+    <div className="min-h-dvh flex justify-center gap-8 flex-col md:mb-12 md:mt-12">
       <Calendario />
     </div>
   );
