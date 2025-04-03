@@ -14,6 +14,8 @@ import {
   UserPlus,
 } from "lucide-react";
 
+import { Button } from "@/app/components/button";
+
 interface Jogador {
   Nome: string;
   Posição: string;
@@ -43,7 +45,7 @@ const PaginaJogador: React.FC = () => {
           const timeNome = timeDoc.id;
           const jogadoresRef = doc(db, `times/${timeNome}`);
           const jogadoresSnap = await getDoc(jogadoresRef);
-          
+
           if (jogadoresSnap.exists()) {
             const jogadoresData = jogadoresSnap.data().Jogadores;
             for (const jogadorKey in jogadoresData) {
@@ -64,7 +66,6 @@ const PaginaJogador: React.FC = () => {
                   Roubos: jogadorInfo.roubos,
                   Jogos: jogadorInfo.Jogos ?? 1, // Garantindo que não seja undefined
                 });
-                
 
                 return;
               }
@@ -140,12 +141,12 @@ const PaginaJogador: React.FC = () => {
         </div>
 
         <div className="flex justify-between mt-6">
-          <button className="flex items-center bg-blue-500 hover:bg-purple-500 text-white font-bold py-2 px-4 rounded-full transition duration-300">
-            <UserPlus className="mr-2" /> Seguir
-          </button>
-          <button className="flex items-center bg-gray-700 hover:bg-gray-600 text-white font-bold py-2 px-4 rounded-full transition duration-300">
-            <MessageCircle className="mr-2" /> Mensagem
-          </button>
+          <Button
+            className=" bg-gray-700 hover:bg-gray-600 text-white font-bold py-2 px-4 rounded-full transition duration-300 w-full cursor-pointer"
+            onClick={() => (window.location.href = "/ranking")}
+          >
+            Voltar
+          </Button>
         </div>
       </div>
     </div>

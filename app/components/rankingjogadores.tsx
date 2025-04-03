@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import { db, collection, getDocs } from "../../firebase";
 import { Crown } from "lucide-react";
 
-interface Jogador {
+type Jogador = {
   nome: string;
   posicao: string;
   pontuacao: number;
@@ -13,7 +13,29 @@ interface Jogador {
   erros: number;
   faltas: number;
   roubos: number;
-}
+  jogos: number;
+
+  // Médias por jogo
+  ppg: number;
+  apg: number;
+  rpg: number;
+  spg: number;
+  tpg: number;
+  fpg: number;
+
+  // Arremessos
+  fgm: number;
+  fga: number;
+  tpm: number;
+  tpa: number;
+  ftm: number;
+  fta: number;
+
+  // Percentuais de acerto
+  fgPerc: number; // Field Goal Percentage
+  tpPerc: number; // Three-Point Percentage
+  ftPerc: number; // Free Throw Percentage
+};
 
 const RankingJogadores: React.FC = () => {
   const [jogadores, setJogadores] = useState<Jogador[]>([]);
@@ -41,6 +63,15 @@ const RankingJogadores: React.FC = () => {
             const jogadorData = jogadoresData[jogadorKey];
 
             if (jogadorData) {
+              const jogos = jogadorData.Jogos || 1; // Evitar divisão por zero
+
+              const fga = jogadorData.fga || 0;
+              const fgm = jogadorData.fgm || 0;
+              const tpa = jogadorData.tpa || 0;
+              const tpm = jogadorData.tpm || 0;
+              const fta = jogadorData.fta || 0;
+              const ftm = jogadorData.ftm || 0;
+
               jogadoresList.push({
                 nome: jogadorData.Nome,
                 posicao: jogadorData.Posição,
@@ -50,6 +81,28 @@ const RankingJogadores: React.FC = () => {
                 erros: jogadorData.erros || 0,
                 faltas: jogadorData.faltas || 0,
                 roubos: jogadorData.roubos || 0,
+                jogos: jogos,
+
+                // Médias por jogo
+                ppg: (jogadorData.pontuacao || 0) / jogos,
+                apg: (jogadorData.assistencias || 0) / jogos,
+                rpg: (jogadorData.rebotes || 0) / jogos,
+                spg: (jogadorData.roubos || 0) / jogos,
+                tpg: (jogadorData.erros || 0) / jogos,
+                fpg: (jogadorData.faltas || 0) / jogos,
+
+                // Arremessos
+                fgm: fgm,
+                fga: fga,
+                tpm: tpm,
+                tpa: tpa,
+                ftm: ftm,
+                fta: fta,
+
+                // Cálculo dos percentuais
+                fgPerc: fga > 0 ? Number(((fgm / fga) * 100).toFixed(0)) : 0,
+                tpPerc: tpa > 0 ? Number(((tpm / tpa) * 100).toFixed(0)) : 0,
+                ftPerc: fta > 0 ? Number(((ftm / fta) * 100).toFixed(0)) : 0,
               });
             }
           }
@@ -102,6 +155,28 @@ const RankingJogadores: React.FC = () => {
       faltasAsc: () => ordenar("faltas", true),
       roubosDesc: () => ordenar("roubos", false),
       roubosAsc: () => ordenar("roubos", true),
+
+      // Ordenações por média por jogo
+      ppgDesc: () => ordenar("ppg", false),
+      ppgAsc: () => ordenar("ppg", true),
+      apgDesc: () => ordenar("apg", false),
+      apgAsc: () => ordenar("apg", true),
+      rpgDesc: () => ordenar("rpg", false),
+      rpgAsc: () => ordenar("rpg", true),
+      spgDesc: () => ordenar("spg", false),
+      spgAsc: () => ordenar("spg", true),
+      tpgDesc: () => ordenar("tpg", false),
+      tpgAsc: () => ordenar("tpg", true),
+      fpgDesc: () => ordenar("fpg", false),
+      fpgAsc: () => ordenar("fpg", true),
+
+      // Ordenações pelos percentuais de arremesso
+      fgPercDesc: () => ordenar("fgPerc", false),
+      fgPercAsc: () => ordenar("fgPerc", true),
+      tpPercDesc: () => ordenar("tpPerc", false),
+      tpPercAsc: () => ordenar("tpPerc", true),
+      ftPercDesc: () => ordenar("ftPerc", false),
+      ftPercAsc: () => ordenar("ftPerc", true),
     };
 
     ordem[filtroOrdenacao as keyof typeof ordem]?.();
@@ -140,13 +215,23 @@ const RankingJogadores: React.FC = () => {
           >
             <option value="pontuacaoDesc">Pontuação (Maior para Menor)</option>
             <option value="pontuacaoAsc">Pontuação (Menor para Maior)</option>
+            <option value="ppgDesc">Pontuação Média (Maior para Menor)</option>
+            <option value="ppgAsc">Pontuação Média (Menor para Maior)</option>
             <option value="rebotesDesc">Rebotes (Maior para Menor)</option>
             <option value="rebotesAsc">Rebotes (Menor para Maior)</option>
+            <option value="rpgDesc">Rebotes Média (Maior para Menor)</option>
+            <option value="rpgAsc">Rebotes Média (Menor para Maior)</option>
             <option value="assistenciasDesc">
               Assistências (Maior para Menor)
             </option>
             <option value="assistenciasAsc">
               Assistências (Menor para Maior)
+            </option>
+            <option value="apgDesc">
+              Assistências Média (Maior para Menor)
+            </option>
+            <option value="apgAsc">
+              Assistências Média (Menor para Maior)
             </option>
             <option value="errosDesc">Erros (Maior para Menor)</option>
             <option value="errosAsc">Erros (Menor para Maior)</option>
@@ -154,6 +239,14 @@ const RankingJogadores: React.FC = () => {
             <option value="faltasAsc">Faltas (Menor para Maior)</option>
             <option value="roubosDesc">Roubos (Maior para Menor)</option>
             <option value="roubosAsc">Roubos (Menor para Maior)</option>
+            <option value="spgDesc">Roubos Média (Maior para Menor)</option>
+            <option value="spgAsc">Roubos Média (Menor para Maior)</option>
+            <option value="tpPercDesc">3P Porcentagem (Maior para Menor)</option>
+            <option value="tpPercAsc">3P Porcentagem (Menor para Maior)</option>
+            <option value="fgPercDesc">FG Porcentagem (Maior para Menor)</option>
+            <option value="fgPercAsc">FG Porcentagem (Menor para Maior)</option>
+            <option value="ftPercDesc">FT Porcentagem (Maior para Menor)</option>
+            <option value="ftPercAsc">FT Porcentagem (Menor para Maior)</option>
           </select>
         </div>
         <div className="flex justify-between w-full md:max-w-sm">
@@ -178,13 +271,22 @@ const RankingJogadores: React.FC = () => {
           <thead>
             <tr className="bg-gray-600">
               <th className="px-2 py-2">Jogador</th>
-              <th className="px-2 py-2">Posição</th>
-              <th className="px-2 py-2">Pontos</th>
-              <th className="px-2 py-2">Assistências</th>
-              <th className="px-2 py-2">Rebotes</th>
-              <th className="px-2 py-2">Erros</th>
-              <th className="px-2 py-2">Faltas</th>
-              <th className="px-2 py-2">Roubos</th>
+              <th className="px-2 py-2">POS</th>
+              <th className="px-2 py-2">JGS</th>
+              <th className="px-2 py-2">PTS</th>
+              <th className="px-2 py-2">PPG</th>
+              <th className="px-2 py-2">AST</th>
+              <th className="px-2 py-2">APG</th>
+              <th className="px-2 py-2">REB</th>
+              <th className="px-2 py-2">RPG</th>
+              <th className="px-2 py-2">TO</th>
+              <th className="px-2 py-2">TPG</th>
+              <th className="px-2 py-2">STL</th>
+              <th className="px-2 py-2">RPG</th>
+              <th className="px-2 py-2">FALTAS</th>
+              <th className="px-2 py-2">3PM</th>
+              <th className="px-2 py-2">FGM</th>
+              <th className="px-2 py-2">FTM</th>
             </tr>
           </thead>
           <tbody>
@@ -202,12 +304,21 @@ const RankingJogadores: React.FC = () => {
                   </a>
                 </td>
                 <td className="px-2 py-2 border-b">{jogador.posicao}</td>
+                <td className="px-2 py-2 border-b">{jogador.jogos}</td>
                 <td className="px-2 py-2 border-b">{jogador.pontuacao}</td>
+                <td className="px-2 py-2 border-b">{jogador.ppg}</td>
                 <td className="px-2 py-2 border-b">{jogador.assistencias}</td>
+                <td className="px-2 py-2 border-b">{jogador.apg}</td>
                 <td className="px-2 py-2 border-b">{jogador.rebotes}</td>
+                <td className="px-2 py-2 border-b">{jogador.rpg}</td>
                 <td className="px-2 py-2 border-b">{jogador.erros}</td>
-                <td className="px-2 py-2 border-b">{jogador.faltas}</td>
+                <td className="px-2 py-2 border-b">{jogador.tpg}</td>
                 <td className="px-2 py-2 border-b">{jogador.roubos}</td>
+                <td className="px-2 py-2 border-b">{jogador.spg}</td>
+                <td className="px-2 py-2 border-b">{jogador.faltas}</td>
+                <td className="px-2 py-2 border-b">{jogador.tpPerc}%</td>
+                <td className="px-2 py-2 border-b">{jogador.fgPerc}%</td>
+                <td className="px-2 py-2 border-b">{jogador.ftPerc}%</td>
               </tr>
             ))}
           </tbody>

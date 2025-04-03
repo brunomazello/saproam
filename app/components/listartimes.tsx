@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { db, collection, getDocs } from "../../firebase"; // Importando Firestore
 import { Crown } from "lucide-react";
+import Link from "next/link";
 
 interface Time {
   id: string;
@@ -14,6 +15,7 @@ interface Time {
   pontosFeitos: number;
   pontosRecebidos: number;
   jogadores: string[];
+  jogos: number[];
 }
 
 const ListarTimes: React.FC = () => {
@@ -24,10 +26,12 @@ const ListarTimes: React.FC = () => {
       const querySnapshot = await getDocs(collection(db, "times"));
       const timesData = querySnapshot.docs.map((doc) => {
         const data = doc.data();
+        console.log(data);
         const vitorias = data.Vitorias || 0;
         const derrotas = data.Derrotas || 0;
         const empates = data.Empates || 0;
-        const pontos = data.Pontos || (vitorias * 3 + empates * 1); // Correção: Vitória vale 3 pontos, empate vale 1
+        const pontos = data.Pontos || vitorias * 3 + empates * 1; // Correção: Vitória vale 3 pontos, empate vale 1
+        const jogos = data.Jogos || 0;
 
         return {
           id: doc.id,
@@ -36,6 +40,7 @@ const ListarTimes: React.FC = () => {
           derrotas,
           empates,
           pontos,
+          jogos,
           pontosFeitos: data.pontosFeitos || 0,
           pontosRecebidos: data.pontosRecebidos || 0,
           jogadores: [
@@ -73,10 +78,11 @@ const ListarTimes: React.FC = () => {
         <thead>
           <tr>
             <th className="px-4 py-2 border-b">Time</th>
+            <th className="px-4 py-2 border-b">J</th>
             <th className="px-4 py-2 border-b">V</th>
             <th className="px-4 py-2 border-b">D</th>
             <th className="px-4 py-2 border-b">E</th> {/* Coluna de Empates */}
-            <th className="px-4 py-2 border-b">PJ</th> {/* Coluna de Pontos */}
+            <th className="px-4 py-2 border-b">P</th> {/* Coluna de Pontos */}
           </tr>
         </thead>
         <tbody>
@@ -85,11 +91,19 @@ const ListarTimes: React.FC = () => {
               key={time.id}
               className="text-center hover:bg-gray-100 hover:text-black md:text-base"
             >
-              <td className="px-2 py-2 border-b">{time.nome}</td>
+              <td className="px-2 py-2 border-b">
+                <Link
+                  href={`/times/${encodeURIComponent(time.nome)}`}
+                  className="hover:underline text-blue-400"
+                >
+                  {time.nome}
+                </Link>
+              </td>
+              <td className="px-2 py-2 border-b">{time.jogos}</td>
               <td className="px-2 py-2 border-b">{time.vitorias}</td>
               <td className="px-2 py-2 border-b">{time.derrotas}</td>
-              <td className="px-2 py-2 border-b">{time.empates}</td> {/* Exibindo Empates */}
-              <td className="px-2 py-2 border-b">{time.pontos}</td> {/* Exibindo Pontos */}
+              <td className="px-2 py-2 border-b">{time.empates}</td>
+              <td className="px-2 py-2 border-b">{time.pontos}</td>
             </tr>
           ))}
         </tbody>
