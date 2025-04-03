@@ -134,7 +134,7 @@ const ContagemRegressiva = () => {
                     rel="noopener noreferrer"
                     className="text-[--color-danger] animate-pulse hover:text-blue-500 text-sm font-bold cursor-pointer"
                   >
-                    🔴 ASSISTIR LIVE 🔥
+                    🔴 ASSISTIR LIVE
                   </a>
                 ) : (
                   temposRestantes[index]

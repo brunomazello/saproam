@@ -27,7 +27,7 @@ export default function AdminPage() {
 
   if (!logado) {
     return (
-      <div className="flex flex-col items-center justify-center min-h-screen bg-gray-800">
+      <div className="flex flex-col items-center justify-center min-h-screen">
         <div className="flex flex-col items-center mb-10">
           <Image src={logo} alt="devstage" width={108.5} height={30} />
           <h1 className="text-4xl text-white font-heading font-medium mt-7">SOUTH AMERICA PRO-AM LEAGUE 2025</h1>
@@ -51,8 +51,8 @@ export default function AdminPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-900 text-white">
-      <nav className="flex justify-between items-center bg-gray-800 p-5">
+    <div className="min-h-screen text-white mt-20">
+      <nav className="flex justify-between items-center p-5">
         <div className="flex items-center space-x-4">
           <Image src={logo} alt="Logo" width={100} height={30} />
           <span className="text-xl font-heading">Admin Panel</span>

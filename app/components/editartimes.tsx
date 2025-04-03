@@ -25,6 +25,9 @@ const EditarTime: React.FC = () => {
   const [jogadores, setJogadores] = useState<any[]>([]);
   const [vitorias, setVitorias] = useState<number>(0);
   const [derrotas, setDerrotas] = useState<number>(0);
+  const [empates, setEmpates] = useState<number>(0);
+  const [pontosFeitos, setPontosFeitos] = useState<number>(0);
+  const [pontosRecebidos, setPontosRecebidos] = useState<number>(0);
   const [loading, setLoading] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -47,22 +50,35 @@ const EditarTime: React.FC = () => {
     if (!nome) return;
     setLoading(true);
     setError(null);
+
     try {
       const timeRef = doc(db, "times", nome);
       const timeSnap = await getDoc(timeRef);
+
       if (timeSnap.exists()) {
         const data = timeSnap.data();
+
         setDono(data.Dono || "");
-        setVitorias(data.Vitorias || 0); // Carregar vitórias
-        setDerrotas(data.Derrota || 0); // Carregar derrotas
-        setJogadores(
-          Object.entries(data.Jogadores || {}).map(([key, value]: any) => ({
-            id: key,
-            ...value,
-          }))
-        );
+        setVitorias(data.Vitorias || 0);
+        setDerrotas(data.Derrotas || 0);
+        setEmpates(data.Empates || 0);
+        setPontosFeitos(data.pontosFeitos || 0);
+        setPontosRecebidos(data.pontosRecebidos || 0);
+
+        // 🔥 Aqui garantimos que Jogadores será um array
+        const jogadoresArray =
+          data.Jogadores && typeof data.Jogadores === "object"
+            ? Object.keys(data.Jogadores).map((id) => ({
+                id, // Mantém o ID do jogador
+                ...data.Jogadores[id], // Copia os dados do jogador
+              }))
+            : [];
+
+        setJogadores(jogadoresArray); // Atualiza corretamente
+        console.log("Jogadores carregados:", jogadoresArray);
       } else {
         setError("Time não encontrado.");
+        setJogadores([]); // Zera a lista caso o time não seja encontrado
       }
     } catch (err) {
       setError("Erro ao carregar os dados do time.");
@@ -71,22 +87,69 @@ const EditarTime: React.FC = () => {
     }
   };
 
-  // Enviar os dados atualizados para o Firebase
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
     setError(null);
+
     try {
       const timeRef = doc(db, "times", nomeTime);
+      const timeSnap = await getDoc(timeRef);
+
+      if (!timeSnap.exists()) {
+        setError("Time não encontrado.");
+        return;
+      }
+
+      const data = timeSnap.data();
+      const vitoriasAntigas = data.Vitorias || 0;
+      const derrotasAntigas = data.Derrotas || 0;
+      const empatesAntigos = data.Empates || 0;
+      const jogosAntigos = data.Jogos || 0;
+      const pontosFeitosAntigos = data.pontosFeitos || 0;
+      const pontosRecebidosAntigos = data.pontosRecebidos || 0;
+
+      // Diferença nas vitórias/derrotas/empates
+      const diferencaVitorias = vitorias - vitoriasAntigas;
+      const diferencaDerrotas = derrotas - derrotasAntigas;
+      const diferencaEmpates = empates - empatesAntigos;
+      const diferencaTotal =
+        diferencaVitorias + diferencaDerrotas + diferencaEmpates;
+
+      // Calcula os pontos
+      const pontosCalculados = vitorias * 3 + empates * 1;
+
+      // Atualiza os jogadores mantendo os dados antigos e ajustando os jogos
+      const jogadoresExistentes = data.Jogadores || {};
       const jogadoresAtualizados = jogadores.reduce((acc, jogador) => {
-        acc[jogador.id] = { Nome: jogador.Nome, Posição: jogador.Posição };
+        acc[jogador.id] = {
+          Nome: jogador.Nome,
+          Posição: jogador.Posição,
+          Jogos: Math.max(
+            (jogadoresExistentes[jogador.id]?.Jogos || 0) + diferencaTotal,
+            0
+          ),
+          assistencias: jogadoresExistentes[jogador.id]?.assistencias || 0,
+          bloqueios: jogadoresExistentes[jogador.id]?.bloqueios || 0,
+          erros: jogadoresExistentes[jogador.id]?.erros || 0,
+          faltas: jogadoresExistentes[jogador.id]?.faltas || 0,
+          pontuacao: jogadoresExistentes[jogador.id]?.pontuacao || 0,
+          rebotes: jogadoresExistentes[jogador.id]?.rebotes || 0,
+          roubos: jogadoresExistentes[jogador.id]?.roubos || 0,
+        };
         return acc;
       }, {});
 
+      // Atualiza o banco de dados
       await updateDoc(timeRef, {
         Jogadores: jogadoresAtualizados,
-        Vitorias: vitorias,  // Atualizar vitórias
-        Derrotas: derrotas,  // Atualizar derrotas
+        Vitorias: vitorias,
+        Derrotas: derrotas,
+        Empates: empates,
+        Jogos: Math.max(jogosAntigos + diferencaTotal, 0),
+        pontosFeitos: pontosFeitos,
+        pontosRecebidos: pontosRecebidos,
+        Pontos: pontosCalculados, // 👈 Novo campo de pontos!
       });
 
       setError("Time atualizado com sucesso!");
@@ -97,23 +160,20 @@ const EditarTime: React.FC = () => {
     }
   };
 
-  // Alterar dados do jogador
-  const handleJogadorChange = (id: string, field: string, value: string) => {
-    setJogadores(
-      jogadores.map((j) => (j.id === id ? { ...j, [field]: value } : j))
+  // Atualiza o estado ao editar um jogador
+  const handleJogadorChange = (id: string, campo: string, valor: any) => {
+    setJogadores((prevJogadores) =>
+      prevJogadores.map((jogador) =>
+        jogador.id === id ? { ...jogador, [campo]: valor } : jogador
+      )
     );
   };
 
-  // Adicionar jogador à lista
-  const handleAdicionarJogador = (nome: string, posicao: string) => {
-    if (!nome || !posicao) return;
-    const slot = `Jogador${POSICOES.indexOf(posicao) + 1}`;
-    setJogadores([...jogadores, { id: slot, Nome: nome, Posição: posicao }]);
-  };
-
-  // Remover jogador da lista
+  // Remove um jogador da lista
   const handleRemoverJogador = (id: string) => {
-    setJogadores(jogadores.filter((j) => j.id !== id));
+    setJogadores((prevJogadores) =>
+      prevJogadores.filter((jogador) => jogador.id !== id)
+    );
   };
 
   return (
@@ -142,92 +202,81 @@ const EditarTime: React.FC = () => {
             ))}
           </select>
         </div>
-        <div>
-          <label className="block text-gray-300">Dono do Time</label>
-          <input
-            type="text"
-            value={dono}
-            onChange={(e) => setDono(e.target.value)}
-            className="w-full p-2 rounded border border-gray-600 bg-gray-800 text-white"
-            required
-          />
-        </div>
 
-        {/* Campos para editar vitórias e derrotas */}
         <div>
           <label className="block text-gray-300">Vitórias</label>
           <input
             type="number"
             value={vitorias}
-            onChange={(e) => setVitorias(Number(e.target.value) || 0)} // Garantir que o valor seja um número
+            onChange={(e) => setVitorias(Number(e.target.value) || 0)}
             className="w-full p-2 rounded border border-gray-600 bg-gray-800 text-white"
           />
         </div>
+
         <div>
           <label className="block text-gray-300">Derrotas</label>
           <input
             type="number"
             value={derrotas}
-            onChange={(e) => setDerrotas(Number(e.target.value) || 0)} // Garantir que o valor seja um número
+            onChange={(e) => setDerrotas(Number(e.target.value) || 0)}
+            className="w-full p-2 rounded border border-gray-600 bg-gray-800 text-white"
+          />
+        </div>
+
+        <div>
+          <label className="block text-gray-300">Empates</label>
+          <input
+            type="number"
+            value={empates}
+            onChange={(e) => setEmpates(Number(e.target.value) || 0)}
             className="w-full p-2 rounded border border-gray-600 bg-gray-800 text-white"
           />
         </div>
 
         {/* Lista de jogadores */}
-        {jogadores.map((jogador) => (
-          <div
-            key={jogador.id}
-            className="p-3 rounded-lg bg-gray-800 text-white"
-          >
-            <input
-              type="text"
-              value={jogador.Nome}
-              onChange={(e) =>
-                handleJogadorChange(jogador.id, "Nome", e.target.value)
-              }
-              className="w-full p-2 rounded border border-gray-600 bg-gray-900 text-white"
-            />
-            <select
-              value={jogador.Posição}
-              onChange={(e) =>
-                handleJogadorChange(jogador.id, "Posição", e.target.value)
-              }
-              className="w-full p-2 mt-2 rounded border border-gray-600 bg-gray-900 text-white"
+        {jogadores.length > 0 ? (
+          jogadores.map((jogador) => (
+            <div
+              key={jogador.id}
+              className="p-3 rounded-lg bg-gray-800 text-white"
             >
-              {POSICOES.map((pos) => (
-                <option key={pos} value={pos}>
-                  {pos}
-                </option>
-              ))}
-            </select>
-            <button
-              type="button"
-              onClick={() => handleRemoverJogador(jogador.id)}
-              className="mt-8 px-3 py-1 bg-danger w-full rounded text-white"
-            >
-              Remover
-            </button>
-          </div>
-        ))}
+              <input
+                type="text"
+                value={jogador.Nome || ""}
+                onChange={(e) =>
+                  handleJogadorChange(jogador.id, "Nome", e.target.value)
+                }
+                className="w-full p-2 rounded border border-gray-600 bg-gray-900 text-white"
+              />
+              <select
+                value={jogador.Posição || ""}
+                onChange={(e) =>
+                  handleJogadorChange(jogador.id, "Posição", e.target.value)
+                }
+                className="w-full p-2 mt-2 rounded border border-gray-600 bg-gray-900 text-white"
+              >
+                {POSICOES.map((pos) => (
+                  <option key={pos} value={pos}>
+                    {pos}
+                  </option>
+                ))}
+              </select>
+              <button
+                type="button"
+                onClick={() => handleRemoverJogador(jogador.id)}
+                className="mt-8 px-3 py-1 bg-danger w-full rounded text-white"
+              >
+                Remover
+              </button>
+            </div>
+          ))
+        ) : (
+          <p className="text-gray-400">Nenhum jogador encontrado.</p>
+        )}
 
-        <div className="flex w-full gap-4 md:flex-row flex-col">
-          <button
-            type="button"
-            onClick={() =>
-              handleAdicionarJogador("Novo Jogador", "Point Guard")
-            }
-            className="px-5 h-12 bg-gray-500 text-blue font-semibold rounded-xl w-auto cursor-pointer hover:bg-blue hover:text-gray-900 transition-colors duration-300"
-          >
-            Adicionar Jogador
-          </button>
-          <button
-            type="submit"
-            disabled={loading}
-            className="px-5 h-12 bg-gray-500 text-blue font-semibold rounded-xl w-auto cursor-pointer hover:bg-blue hover:text-gray-900 transition-colors duration-300"
-          >
-            {loading ? "Carregando..." : "Salvar"}
-          </button>
-        </div>
+        <button type="submit" disabled={loading} className="btn">
+          {loading ? "Carregando..." : "Salvar"}
+        </button>
       </form>
     </div>
   );

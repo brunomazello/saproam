@@ -24,6 +24,7 @@ interface Jogador {
   Erros?: number;
   Faltas?: number;
   Roubos?: number;
+  Jogos?: number;
 }
 
 const PaginaJogador: React.FC = () => {
@@ -42,19 +43,36 @@ const PaginaJogador: React.FC = () => {
           const timeNome = timeDoc.id;
           const jogadoresRef = doc(db, `times/${timeNome}`);
           const jogadoresSnap = await getDoc(jogadoresRef);
+          
           if (jogadoresSnap.exists()) {
             const jogadoresData = jogadoresSnap.data().Jogadores;
             for (const jogadorKey in jogadoresData) {
               const jogadorInfo = jogadoresData[jogadorKey];
+
               if (jogadorInfo.Nome === id) {
-                setJogador({ ...jogadorInfo, Time: timeNome });
+                console.log("🔥 Dados do jogador encontrados:", jogadorInfo);
+
+                setJogador({
+                  Nome: jogadorInfo.Nome,
+                  Posição: jogadorInfo.Posição,
+                  Time: timeNome,
+                  Pontuação: jogadorInfo.pontuacao, // Corrigido para minúsculas
+                  Assistências: jogadorInfo.assistencias,
+                  Rebotes: jogadorInfo.rebotes,
+                  Erros: jogadorInfo.erros,
+                  Faltas: jogadorInfo.faltas,
+                  Roubos: jogadorInfo.roubos,
+                  Jogos: jogadorInfo.Jogos ?? 1, // Garantindo que não seja undefined
+                });
+                
+
                 return;
               }
             }
           }
         }
       } catch (error) {
-        console.error("Erro ao buscar jogador:", error);
+        console.error("❌ Erro ao buscar jogador:", error);
       }
     };
     fetchJogador();
@@ -65,8 +83,20 @@ const PaginaJogador: React.FC = () => {
       <p className="text-gray-300 text-center text-xl mt-10">Carregando...</p>
     );
 
+  // 📌 Logs de depuração para conferir valores
+  console.log("📊 Estatísticas do jogador:", jogador);
+
+  // 🔥 Agora garantimos que `Jogos` nunca será zero ou undefined
+  const jogos = jogador.Jogos ?? 1;
+  const ppg = ((jogador.Pontuação ?? 0) / jogos).toFixed(1);
+  const apg = ((jogador.Assistências ?? 0) / jogos).toFixed(1);
+  const rpg = ((jogador.Rebotes ?? 0) / jogos).toFixed(1);
+  const spg = ((jogador.Roubos ?? 0) / jogos).toFixed(1);
+  const tpg = ((jogador.Erros ?? 0) / jogos).toFixed(1);
+  const fpg = ((jogador.Faltas ?? 0) / jogos).toFixed(1);
+
   return (
-    <div className="flex justify-center items-center h-screen bg-gray-900 p-6">
+    <div className="flex justify-center items-center h-screen p-6">
       <div className="bg-gray-800 backdrop-blur-lg border border-gray-700 shadow-xl rounded-xl p-6 w-96 text-white text-center relative overflow-hidden">
         <div className="relative z-10">
           <h1 className="text-4xl font-bold text-blue-500 mb-2 font-heading drop-shadow-md">
@@ -83,40 +113,28 @@ const PaginaJogador: React.FC = () => {
           </h2>
           <div className="grid grid-cols-2 gap-3 text-gray-300 font-sans">
             <p className="flex items-center">
-              <Target className="mr-2 text-blue-500" /> Pontos:{" "}
-              <span className="font-bold text-white ml-1">
-                {jogador.Pontuação ?? 0}
-              </span>
+              <Target className="mr-2 text-blue-500" /> PPG:{" "}
+              <span className="font-bold text-white ml-1">{ppg}</span>
             </p>
             <p className="flex items-center">
-              <MoveHorizontal className="mr-2 text-purple-400" /> Assistências:{" "}
-              <span className="font-bold text-white ml-1">
-                {jogador.Assistências ?? 0}
-              </span>
+              <MoveHorizontal className="mr-2 text-purple-400" /> APG:{" "}
+              <span className="font-bold text-white ml-1">{apg}</span>
             </p>
             <p className="flex items-center">
-              <Shield className="mr-2 text-gray-200" /> Rebotes:{" "}
-              <span className="font-bold text-white ml-1">
-                {jogador.Rebotes ?? 0}
-              </span>
+              <Shield className="mr-2 text-gray-200" /> RPG:{" "}
+              <span className="font-bold text-white ml-1">{rpg}</span>
             </p>
             <p className="flex items-center">
-              <AlertCircle className="mr-2 text-red-500" /> Erros:{" "}
-              <span className="font-bold text-red-500 ml-1">
-                {jogador.Erros ?? 0}
-              </span>
+              <MoveHorizontal className="mr-2 text-purple-400" /> SPG:{" "}
+              <span className="font-bold text-white ml-1">{spg}</span>
             </p>
             <p className="flex items-center">
-              <AlertCircle className="mr-2 text-red-500" /> Faltas:{" "}
-              <span className="font-bold text-red-500 ml-1">
-                {jogador.Faltas ?? 0}
-              </span>
+              <AlertCircle className="mr-2 text-red-500" /> TPG:{" "}
+              <span className="font-bold text-red-500 ml-1">{tpg}</span>
             </p>
             <p className="flex items-center">
-              <MoveHorizontal className="mr-2 text-purple-400" /> Roubos:{" "}
-              <span className="font-bold text-white ml-1">
-                {jogador.Roubos ?? 0}
-              </span>
+              <AlertCircle className="mr-2 text-red-500" /> FPG:{" "}
+              <span className="font-bold text-red-500 ml-1">{fpg}</span>
             </p>
           </div>
         </div>
