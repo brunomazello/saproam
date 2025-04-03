@@ -31,150 +31,158 @@ const EditarTime: React.FC = () => {
   const [loading, setLoading] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
 
-  // Carregar os times do Firebase
-  useEffect(() => {
-    const fetchTimes = async () => {
-      try {
-        const timesRef = collection(db, "times");
-        const snapshot = await getDocs(timesRef);
-        setTimes(snapshot.docs.map((doc) => doc.id));
-      } catch (err) {
-        setError("Erro ao carregar os times.");
-      }
-    };
-    fetchTimes();
-  }, []);
-
-  // Carregar os dados de um time específico
-  const carregarDadosTime = async (nome: string) => {
-    if (!nome) return;
-    setLoading(true);
-    setError(null);
-
+// Carregar os times do Firebase
+useEffect(() => {
+  const fetchTimes = async () => {
     try {
-      const timeRef = doc(db, "times", nome);
-      const timeSnap = await getDoc(timeRef);
-
-      if (timeSnap.exists()) {
-        const data = timeSnap.data();
-
-        setDono(data.Dono || "");
-        setVitorias(data.Vitorias || 0);
-        setDerrotas(data.Derrotas || 0);
-        setEmpates(data.Empates || 0);
-        setPontosFeitos(data.pontosFeitos || 0);
-        setPontosRecebidos(data.pontosRecebidos || 0);
-
-        // 🔥 Aqui garantimos que Jogadores será um array
-        const jogadoresArray =
-          data.Jogadores && typeof data.Jogadores === "object"
-            ? Object.keys(data.Jogadores).map((id) => ({
-                id, // Mantém o ID do jogador
-                ...data.Jogadores[id], // Copia os dados do jogador
-              }))
-            : [];
-
-        setJogadores(jogadoresArray); // Atualiza corretamente
-        console.log("Jogadores carregados:", jogadoresArray);
-      } else {
-        setError("Time não encontrado.");
-        setJogadores([]); // Zera a lista caso o time não seja encontrado
-      }
+      const timesRef = collection(db, "times");
+      const snapshot = await getDocs(timesRef);
+      setTimes(snapshot.docs.map((doc) => doc.id));
     } catch (err) {
-      setError("Erro ao carregar os dados do time.");
-    } finally {
-      setLoading(false);
+      setError("Erro ao carregar os times.");
     }
   };
+  fetchTimes();
+}, []);
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setLoading(true);
-    setError(null);
+// Carregar os dados de um time específico
+const carregarDadosTime = async (nome: string) => {
+  if (!nome) return;
+  setLoading(true);
+  setError(null);
 
-    try {
-      const timeRef = doc(db, "times", nomeTime);
-      const timeSnap = await getDoc(timeRef);
+  try {
+    const timeRef = doc(db, "times", nome);
+    const timeSnap = await getDoc(timeRef);
 
-      if (!timeSnap.exists()) {
-        setError("Time não encontrado.");
-        return;
-      }
-
+    if (timeSnap.exists()) {
       const data = timeSnap.data();
-      const vitoriasAntigas = data.Vitorias || 0;
-      const derrotasAntigas = data.Derrotas || 0;
-      const empatesAntigos = data.Empates || 0;
-      const jogosAntigos = data.Jogos || 0;
-      const pontosFeitosAntigos = data.pontosFeitos || 0;
-      const pontosRecebidosAntigos = data.pontosRecebidos || 0;
 
-      // Diferença nas vitórias/derrotas/empates
-      const diferencaVitorias = vitorias - vitoriasAntigas;
-      const diferencaDerrotas = derrotas - derrotasAntigas;
-      const diferencaEmpates = empates - empatesAntigos;
-      const diferencaTotal =
-        diferencaVitorias + diferencaDerrotas + diferencaEmpates;
+      setDono(data.Dono || "");
+      setVitorias(data.Vitorias || 0);
+      setDerrotas(data.Derrotas || 0);
+      setEmpates(data.Empates || 0);
+      setPontosFeitos(data.pontosFeitos || 0);
+      setPontosRecebidos(data.pontosRecebidos || 0);
 
-      // Calcula os pontos
-      const pontosCalculados = vitorias * 3 + empates * 1;
+      // 🔥 Garante que Jogadores será um array
+      const jogadoresArray =
+        data.Jogadores && typeof data.Jogadores === "object"
+          ? Object.keys(data.Jogadores).map((id) => ({
+              id, // Mantém o ID do jogador
+              ...data.Jogadores[id], // Copia os dados do jogador
+            }))
+          : [];
 
-      // Atualiza os jogadores mantendo os dados antigos e ajustando os jogos
-      const jogadoresExistentes = data.Jogadores || {};
-      const jogadoresAtualizados = jogadores.reduce((acc, jogador) => {
-        acc[jogador.id] = {
-          Nome: jogador.Nome,
-          Posição: jogador.Posição,
-          Jogos: Math.max(
-            (jogadoresExistentes[jogador.id]?.Jogos || 0) + diferencaTotal,
-            0
-          ),
-          assistencias: jogadoresExistentes[jogador.id]?.assistencias || 0,
-          bloqueios: jogadoresExistentes[jogador.id]?.bloqueios || 0,
-          erros: jogadoresExistentes[jogador.id]?.erros || 0,
-          faltas: jogadoresExistentes[jogador.id]?.faltas || 0,
-          pontuacao: jogadoresExistentes[jogador.id]?.pontuacao || 0,
-          rebotes: jogadoresExistentes[jogador.id]?.rebotes || 0,
-          roubos: jogadoresExistentes[jogador.id]?.roubos || 0,
-        };
-        return acc;
-      }, {});
-
-      // Atualiza o banco de dados
-      await updateDoc(timeRef, {
-        Jogadores: jogadoresAtualizados,
-        Vitorias: vitorias,
-        Derrotas: derrotas,
-        Empates: empates,
-        Jogos: Math.max(jogosAntigos + diferencaTotal, 0),
-        pontosFeitos: pontosFeitos,
-        pontosRecebidos: pontosRecebidos,
-        Pontos: pontosCalculados, // 👈 Novo campo de pontos!
-      });
-
-      setError("Time atualizado com sucesso!");
-    } catch (err) {
-      setError("Erro ao atualizar o time.");
-    } finally {
-      setLoading(false);
+      setJogadores(jogadoresArray);
+      console.log("Jogadores carregados:", jogadoresArray);
+    } else {
+      setError("Time não encontrado.");
+      setJogadores([]); // Zera a lista caso o time não seja encontrado
     }
-  };
+  } catch (err) {
+    setError("Erro ao carregar os dados do time.");
+  } finally {
+    setLoading(false);
+  }
+};
 
-  // Atualiza o estado ao editar um jogador
-  const handleJogadorChange = (id: string, campo: string, valor: any) => {
-    setJogadores((prevJogadores) =>
-      prevJogadores.map((jogador) =>
-        jogador.id === id ? { ...jogador, [campo]: valor } : jogador
-      )
-    );
-  };
+const handleSubmit = async (e: React.FormEvent) => {
+  e.preventDefault();
+  setLoading(true);
+  setError(null);
 
-  // Remove um jogador da lista
-  const handleRemoverJogador = (id: string) => {
-    setJogadores((prevJogadores) =>
-      prevJogadores.filter((jogador) => jogador.id !== id)
-    );
-  };
+  try {
+    const timeRef = doc(db, "times", nomeTime);
+    const timeSnap = await getDoc(timeRef);
+
+    if (!timeSnap.exists()) {
+      setError("Time não encontrado.");
+      return;
+    }
+
+    const data = timeSnap.data();
+    const vitoriasAntigas = data.Vitorias || 0;
+    const derrotasAntigas = data.Derrotas || 0;
+    const empatesAntigos = data.Empates || 0;
+    const jogosAntigos = data.Jogos || 0;
+
+    // 🔹 **Calculando a diferença nos resultados**
+    const diferencaVitorias = vitorias - vitoriasAntigas;
+    console.log(diferencaVitorias)
+    const diferencaDerrotas = derrotas - derrotasAntigas;
+    console.log(diferencaDerrotas)
+    const diferencaEmpates = empates - empatesAntigos;
+    console.log(diferencaEmpates)
+
+    // 🔹 **Cada jogo deve contar como 2**
+    const jogosCalculados =
+      (diferencaVitorias + diferencaDerrotas + diferencaEmpates) * 2;
+
+    // 🔹 **Somando corretamente os jogos**
+    const jogosAtualizados = Math.max(jogosAntigos + jogosCalculados, 0);
+
+    // 🔹 **Calcula os pontos corretamente**
+    const pontosCalculados = vitorias * 3 + empates * 1;
+
+    // Atualiza os jogadores mantendo os dados antigos e ajustando os jogos
+    const jogadoresExistentes = data.Jogadores || {};
+    const jogadoresAtualizados = jogadores.reduce((acc, jogador) => {
+      acc[jogador.id] = {
+        Nome: jogador.Nome,
+        Posição: jogador.Posição,
+        Jogos: Math.max(
+          (jogadoresExistentes[jogador.id]?.Jogos || 0) + jogosCalculados,
+          0
+        ),
+        assistencias: jogadoresExistentes[jogador.id]?.assistencias || 0,
+        bloqueios: jogadoresExistentes[jogador.id]?.bloqueios || 0,
+        erros: jogadoresExistentes[jogador.id]?.erros || 0,
+        faltas: jogadoresExistentes[jogador.id]?.faltas || 0,
+        pontuacao: jogadoresExistentes[jogador.id]?.pontuacao || 0,
+        rebotes: jogadoresExistentes[jogador.id]?.rebotes || 0,
+        roubos: jogadoresExistentes[jogador.id]?.roubos || 0,
+      };
+      return acc;
+    }, {});
+
+    // Atualiza o banco de dados
+    await updateDoc(timeRef, {
+      Jogadores: jogadoresAtualizados,
+      Vitorias: vitorias,
+      Derrotas: derrotas,
+      Empates: empates,
+      Jogos: jogosAtualizados, // ✅ **Agora os jogos são dobrados corretamente**
+      pontosFeitos: pontosFeitos,
+      pontosRecebidos: pontosRecebidos,
+      Pontos: pontosCalculados,
+    });
+
+    setError("Time atualizado com sucesso!");
+  } catch (err) {
+    setError("Erro ao atualizar o time.");
+  } finally {
+    setLoading(false);
+  }
+};
+
+
+
+// Atualiza o estado ao editar um jogador
+const handleJogadorChange = (id: string, campo: string, valor: any) => {
+  setJogadores((prevJogadores) =>
+    prevJogadores.map((jogador) =>
+      jogador.id === id ? { ...jogador, [campo]: valor } : jogador
+    )
+  );
+};
+
+// Remove um jogador da lista
+const handleRemoverJogador = (id: string) => {
+  setJogadores((prevJogadores) =>
+    prevJogadores.filter((jogador) => jogador.id !== id)
+  );
+};
 
   return (
     <div className="flex flex-col items-center rounded-xl text-gray-200 w-full mx-auto shadow-lg mt-20">
