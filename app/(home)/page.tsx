@@ -18,6 +18,7 @@ import FullCalendar from "@fullcalendar/react";
 import Calendario from "../components/fullcalendar";
 import TimerPage from "../components/timerpage";
 import RegrasLink from "../components/regraslink";
+import ListarTimesMini from "../components/listatimes-mini";
 export default function Home() {
   return (
     <div className="min-h-dvh flex justify-center gap-8 flex-col md:mb-12 mt-16">
@@ -37,12 +38,7 @@ export default function Home() {
           <TimerPage />
         </div>
         <div className="flex md:flex-col flex-col md:hidden">
-          <ListarTimes />
-          <div className="flex items-center w-full justify-end mt-4">
-            <a href="/ranking" className="hover:text-gray-300 hover:underline mb-10">
-              Ver completo
-            </a>
-          </div>
+          <ListarTimesMini />
         </div>
         <div className="flex-1 bg-gray-700 border border-gray-600 rounded-2xl p-8 space-y-6">
           <div className="flex items-center justify-between md:justify-center">
@@ -159,12 +155,7 @@ export default function Home() {
           </div>
         </div>
         <div className="flex md:flex-col flex-col md:block hidden">
-          <ListarTimes />
-          <div className="flex items-center w-full justify-end mt-4">
-            <a href="/ranking" className="hover:text-gray-300 hover:underline">
-              Ver completo
-            </a>
-          </div>
+          <ListarTimes/>
         </div>
       </div>
     </div>

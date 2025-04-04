@@ -18,7 +18,7 @@ interface Time {
   jogos: number[];
 }
 
-const ListarTimes: React.FC = () => {
+const ListarTimesMini: React.FC = () => {
   const [times, setTimes] = useState<Time[]>([]);
 
   useEffect(() => {
@@ -75,56 +75,55 @@ const ListarTimes: React.FC = () => {
         </h2>
       </div>
       <div className="overflow-x-auto w-full">
-      <table className="table-auto w-full text-gray-200 bg-black">
-        <thead>
-          <tr>
-            <th className="px-4 py-2 border-b flex justify-center">
-              <Trophy />
-            </th>
-            {/* <- Nova coluna */}
-            <th className="px-4 py-2 border-b">Time</th>
-            <th className="px-4 py-2 border-b">J</th>
-            <th className="px-4 py-2 border-b">V</th>
-            <th className="px-4 py-2 border-b">E</th>
-            <th className="px-4 py-2 border-b">D</th>
-            <th className="px-4 py-2 border-b">P</th>
-          </tr>
-        </thead>
-
-        <tbody>
-          {times.map((time, index) => (
-            <tr
-              key={time.id}
-              className={`text-center md:text-base ${
-                index === times.length - 1
-                  ? "bg-danger text-black"
-                  : index >= 4
-                  ? "bg-blue text-black"
-                  : "bg-gray-200 text-black"
-              }`}
-            >
-              <td className="px-2 py-2 border-b font-bold">{index + 1}</td>{" "}
-              {/* <- Posição */}
-              <td className="px-2 py-2 border-b font-semibold">
-                <Link
-                  href={`/times/${encodeURIComponent(time.nome)}`}
-                  className="hover:underline text-blue-400"
-                >
-                  {time.nome}
-                </Link>
-              </td>
-              <td className="px-2 py-2 border-b">{time.jogos}</td>
-              <td className="px-2 py-2 border-b">{time.vitorias}</td>
-              <td className="px-2 py-2 border-b">{time.empates}</td>
-              <td className="px-2 py-2 border-b">{time.derrotas}</td>
-              <td className="px-2 py-2 border-b">{time.pontos}</td>
+        <table className="table-auto w-full text-gray-200 bg-black">
+          <thead>
+            <tr>
+              <th className="px-4 py-2 border-b flex justify-center">
+                <Trophy />
+              </th>
+              {/* <- Nova coluna */}
+              <th className="px-4 py-2 border-b">Time</th>
+              <th className="px-4 py-2 border-b">J</th>
+              <th className="px-4 py-2 border-b">P</th>
             </tr>
-          ))}
-        </tbody>
-      </table>
+          </thead>
+
+          <tbody>
+            {times.map((time, index) => (
+              <tr
+                key={time.id}
+                className={`text-center md:text-base ${
+                  index === times.length - 1
+                    ? "bg-danger text-black"
+                    : index >= 4
+                    ? "bg-blue text-black"
+                    : "bg-gray-200 text-black"
+                }`}
+              >
+                <td className="px-2 py-2 border-b font-bold">{index + 1}</td>{" "}
+                {/* <- Posição */}
+                <td className="px-2 py-2 border-b font-semibold">
+                  <Link
+                    href={`/times/${encodeURIComponent(time.nome)}`}
+                    className="hover:underline text-blue-400"
+                  >
+                    {time.nome}
+                  </Link>
+                </td>
+                <td className="px-2 py-2 border-b">{time.jogos}</td>
+                <td className="px-2 py-2 border-b">{time.pontos}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+      <div className="flex items-center w-full justify-end mt-4">
+        <a href="/ranking" className="hover:text-gray-300 hover:underline">
+          Ver completo
+        </a>
       </div>
     </div>
   );
 };
 
-export default ListarTimes;
+export default ListarTimesMini;
