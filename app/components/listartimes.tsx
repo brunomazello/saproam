@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { db, collection, getDocs } from "../../firebase"; // Importando Firestore
-import { Crown } from "lucide-react";
+import { Crown, Trophy } from "lucide-react";
 import Link from "next/link";
 
 interface Time {
@@ -74,24 +74,37 @@ const ListarTimes: React.FC = () => {
           Ranking Times
         </h2>
       </div>
-      <table className="table-auto w-full text-gray-200">
+      <table className="table-auto w-full text-gray-200 bg-black">
         <thead>
           <tr>
+            <th className="px-4 py-2 border-b flex justify-center">
+              <Trophy />
+            </th>
+            {/* <- Nova coluna */}
             <th className="px-4 py-2 border-b">Time</th>
             <th className="px-4 py-2 border-b">J</th>
             <th className="px-4 py-2 border-b">V</th>
-            <th className="px-4 py-2 border-b">E</th> {/* Coluna de Empates */}
+            <th className="px-4 py-2 border-b">E</th>
             <th className="px-4 py-2 border-b">D</th>
-            <th className="px-4 py-2 border-b">P</th> {/* Coluna de Pontos */}
+            <th className="px-4 py-2 border-b">P</th>
           </tr>
         </thead>
+
         <tbody>
-          {times.map((time) => (
+          {times.map((time, index) => (
             <tr
               key={time.id}
-              className="text-center hover:bg-gray-100 hover:text-black md:text-base"
+              className={`text-center md:text-base ${
+                index === times.length - 1
+                  ? "bg-danger text-black"
+                  : index >= 4
+                  ? "bg-blue text-black"
+                  : "bg-gray-200 text-black"
+              }`}
             >
-              <td className="px-2 py-2 border-b">
+              <td className="px-2 py-2 border-b font-bold">{index + 1}</td>{" "}
+              {/* <- Posição */}
+              <td className="px-2 py-2 border-b font-semibold">
                 <Link
                   href={`/times/${encodeURIComponent(time.nome)}`}
                   className="hover:underline text-blue-400"
