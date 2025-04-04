@@ -6,7 +6,7 @@ import Navbar from "./components/navbar";
 
 export const metadata: Metadata = {
   title: "South America Pro-AM League 2025",
-  icons: { icon: "/basketball.png" },
+  icons: { icon: "/sapal-logo.jpeg" },
 };
 
 const oxanium = Oxanium({
