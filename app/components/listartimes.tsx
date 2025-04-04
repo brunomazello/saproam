@@ -67,7 +67,7 @@ const ListarTimes: React.FC = () => {
   }, []);
 
   return (
-    <div className="bg-gray-700 border border-gray-600 rounded-2xl p-8 space-y-6 h-auto w-full">
+    <div className="bg-gray-700 border border-gray-600 rounded-2xl p-8 space-y-6 h-auto w-full overflow-x-auto">
       <div className="flex items-center mb-6 justify-center">
         <Crown size={35} />
         <h2 className="font-heading font-semibold text-gray-200 ml-2.5 text-3xl uppercase">
