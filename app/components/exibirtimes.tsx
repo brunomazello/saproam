@@ -14,6 +14,7 @@ interface Jogador {
   faltas: number;
   erros: number;
   posicao: string;
+
 }
 
 interface Time {
@@ -23,6 +24,8 @@ interface Time {
   Jogadores: Jogador[];
   Vitorias: number; // Campo para vitórias
   Derrotas: number; // Campo para derrotas
+  Jogos: number;
+  Empates: number;
 }
 
 const ordemPosicoes: { [key: string]: number } = {
@@ -78,6 +81,8 @@ const ExibirTimes: React.FC = () => {
             Jogadores: jogadores,
             Vitorias: timeData.Vitorias || 0, // Carregando vitórias
             Derrotas: timeData.Derrota || 0,  // Carregando derrotas
+            Jogos: timeData.Jogos || 0,
+            Empates:timeData.Empates || 0,
           };
         });
 
@@ -111,7 +116,7 @@ const ExibirTimes: React.FC = () => {
                 <h3 className="text-xl font-bold text-gray-200 md:text-left text-center md:mt-6">
                   {/* Exibindo Vitorias e Derrotas */}
                   <span className="inline-block bg-gray-900 text-white text-sm font-bold py-1 px-3 rounded-full">
-                    V: {time.Vitorias} - D: {time.Derrotas}
+                    J: {time.Jogos} - V: {time.Vitorias} - E: {time.Empates} - D: {time.Derrotas}
                   </span>
                   {/* Badge do GM (Dono) */}
                   <span className="inline-block bg-gray-900 text-white text-sm font-bold py-1 px-3 rounded-full ml-2">

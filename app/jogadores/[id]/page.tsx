@@ -27,6 +27,8 @@ interface Jogador {
   Faltas?: number;
   Roubos?: number;
   Jogos?: number;
+  tpm?: number;
+
 }
 
 const PaginaJogador: React.FC = () => {
@@ -65,6 +67,7 @@ const PaginaJogador: React.FC = () => {
                   Faltas: jogadorInfo.faltas,
                   Roubos: jogadorInfo.roubos,
                   Jogos: jogadorInfo.Jogos ?? 1, // Garantindo que não seja undefined
+                  tpm: jogadorInfo.tpm ?? 0,
                 });
 
                 return;
@@ -93,7 +96,7 @@ const PaginaJogador: React.FC = () => {
   const apg = ((jogador.Assistências ?? 0) / jogos).toFixed(1);
   const rpg = ((jogador.Rebotes ?? 0) / jogos).toFixed(1);
   const spg = ((jogador.Roubos ?? 0) / jogos).toFixed(1);
-  const tpg = ((jogador.Erros ?? 0) / jogos).toFixed(1);
+  const tpm = ((jogador.tpm ?? 0) / jogos).toFixed(1);
   const fpg = ((jogador.Faltas ?? 0) / jogos).toFixed(1);
 
   return (
@@ -130,8 +133,8 @@ const PaginaJogador: React.FC = () => {
               <span className="font-bold text-white ml-1">{spg}</span>
             </p>
             <p className="flex items-center">
-              <AlertCircle className="mr-2 text-red-500" /> TPG:{" "}
-              <span className="font-bold text-red-500 ml-1">{tpg}</span>
+              <AlertCircle className="mr-2 text-red-500" /> 3PG:{" "}
+              <span className="font-bold text-red-500 ml-1">{tpm}</span>
             </p>
             <p className="flex items-center">
               <AlertCircle className="mr-2 text-red-500" /> FPG:{" "}

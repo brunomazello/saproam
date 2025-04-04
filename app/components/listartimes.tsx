@@ -80,8 +80,8 @@ const ListarTimes: React.FC = () => {
             <th className="px-4 py-2 border-b">Time</th>
             <th className="px-4 py-2 border-b">J</th>
             <th className="px-4 py-2 border-b">V</th>
-            <th className="px-4 py-2 border-b">D</th>
             <th className="px-4 py-2 border-b">E</th> {/* Coluna de Empates */}
+            <th className="px-4 py-2 border-b">D</th>
             <th className="px-4 py-2 border-b">P</th> {/* Coluna de Pontos */}
           </tr>
         </thead>
@@ -101,8 +101,8 @@ const ListarTimes: React.FC = () => {
               </td>
               <td className="px-2 py-2 border-b">{time.jogos}</td>
               <td className="px-2 py-2 border-b">{time.vitorias}</td>
-              <td className="px-2 py-2 border-b">{time.derrotas}</td>
               <td className="px-2 py-2 border-b">{time.empates}</td>
+              <td className="px-2 py-2 border-b">{time.derrotas}</td>
               <td className="px-2 py-2 border-b">{time.pontos}</td>
             </tr>
           ))}

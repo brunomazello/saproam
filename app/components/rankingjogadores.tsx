@@ -22,6 +22,7 @@ type Jogador = {
   spg: number;
   tpg: number;
   fpg: number;
+  tppg: number;
 
   // Arremessos
   fgm: number;
@@ -82,6 +83,7 @@ const RankingJogadores: React.FC = () => {
                 faltas: jogadorData.faltas || 0,
                 roubos: jogadorData.roubos || 0,
                 jogos: jogos,
+                
 
                 // Médias por jogo
                 ppg: (jogadorData.pontuacao || 0) / jogos,
@@ -90,6 +92,7 @@ const RankingJogadores: React.FC = () => {
                 spg: (jogadorData.roubos || 0) / jogos,
                 tpg: (jogadorData.erros || 0) / jogos,
                 fpg: (jogadorData.faltas || 0) / jogos,
+                tppg: (jogadorData.tpm || 0) / jogos,
 
                 // Arremessos
                 fgm: fgm,
@@ -282,8 +285,9 @@ const RankingJogadores: React.FC = () => {
               <th className="px-2 py-2">TO</th>
               <th className="px-2 py-2">TPG</th>
               <th className="px-2 py-2">STL</th>
-              <th className="px-2 py-2">RPG</th>
+              <th className="px-2 py-2">SPG</th>
               <th className="px-2 py-2">FALTAS</th>
+              <th className="px-2 py-2">3PG</th>
               <th className="px-2 py-2">3PM</th>
               <th className="px-2 py-2">FGM</th>
               <th className="px-2 py-2">FTM</th>
@@ -316,6 +320,7 @@ const RankingJogadores: React.FC = () => {
                 <td className="px-2 py-2 border-b">{jogador.roubos}</td>
                 <td className="px-2 py-2 border-b">{jogador.spg}</td>
                 <td className="px-2 py-2 border-b">{jogador.faltas}</td>
+                <td className="px-2 py-2 border-b">{jogador.tppg}</td>
                 <td className="px-2 py-2 border-b">{jogador.tpPerc}%</td>
                 <td className="px-2 py-2 border-b">{jogador.fgPerc}%</td>
                 <td className="px-2 py-2 border-b">{jogador.ftPerc}%</td>
