@@ -210,7 +210,7 @@ const EditarTime: React.FC = () => {
         Pontos: pontosCalculados,
       });
 
-      toast.error("❌Time atualizado com sucesso!");
+      toast.success("Time atualizado com sucesso!");
     } catch (err) {
       toast.error("❌Erro ao atualizar o time.");
     } finally {
@@ -235,7 +235,8 @@ const EditarTime: React.FC = () => {
   };
 
   return (
-    <div className="flex flex-col items-center rounded-xl text-gray-200 w-full mx-auto shadow-lg mt-20">
+    <div className="p-6 max-w-4xl mx-auto">
+      <ToastContainer/>
       <h2 className="font-heading font-semibold text-blue text-3xl mb-4 uppercase">
         Editar Time
       </h2>

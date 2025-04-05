@@ -2,6 +2,8 @@
 
 import { useState } from "react";
 import { db, doc, setDoc } from "../../firebase"; // Importando Firestore
+import { ToastContainer, toast } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 
 const CreateTime: React.FC = () => {
   const [nome, setNome] = useState("");
@@ -42,6 +44,7 @@ const CreateTime: React.FC = () => {
 
       // Salvando no Firestore
       await setDoc(timeRef, timeData);
+      toast.success("Time cadastrado com sucesso")
 
       // Resetando os campos
       setNome("");
@@ -60,7 +63,8 @@ const CreateTime: React.FC = () => {
   };
 
   return (
-    <div>
+    <div className="p-6 max-w-4xl mx-auto">
+      <ToastContainer/>
       <h2 className="font-heading font-semibold text-blue text-3xl mb-4 uppercase text-center">
         Criar Time
       </h2>
@@ -171,13 +175,13 @@ const CreateTime: React.FC = () => {
           />
         </div>
         <div className="flex justify-center items-center">
-        <button
-          type="submit"
-          disabled={loading}
-          className="w-full flex text-center justify-between items-center px-5 h-12 bg-gray-500 text-blue font-semibold rounded-xl cursor-pointer hover:bg-blue hover:text-gray-900 transition-colors duration-300 mt-6"
-        >
-          {loading ? "Carregando..." : "Criar Time"}
-        </button>
+          <button
+            type="submit"
+            disabled={loading}
+            className="w-full flex text-center justify-between items-center px-5 h-12 bg-gray-500 text-blue font-semibold rounded-xl cursor-pointer hover:bg-blue hover:text-gray-900 transition-colors duration-300 mt-6"
+          >
+            {loading ? "Carregando..." : "Criar Time"}
+          </button>
         </div>
       </form>
     </div>

@@ -9,16 +9,11 @@ import {
   ShieldAlert,
   Calendar,
 } from "lucide-react";
-import { LinkButton } from "../components/button";
+import { Button } from "../components/button";
 import Image from "next/image";
-import AdComponent from "../components/AdComponent";
-import ListarTimes from "../components/listartimes";
-import ExibirTimes from "../components/exibirtimes";
-import FullCalendar from "@fullcalendar/react";
-import Calendario from "../components/fullcalendar";
 import TimerPage from "../components/timerpage";
-import RegrasLink from "../components/regraslink";
 import ListarTimesMini from "../components/listatimes-mini";
+import ContadorJogadores from "../components/contadorjogadores";
 export default function Home() {
   return (
     <div className="min-h-dvh flex justify-center gap-8 flex-col md:mb-12 mt-16">
@@ -37,8 +32,9 @@ export default function Home() {
         <div className="flex md:flex-col flex-col md:hidden">
           <TimerPage />
         </div>
-        <div className="flex md:flex-col flex-col md:hidden">
+        <div className="flex md:flex-col flex-col md:hidden gap-4">
           <ListarTimesMini />
+          <ContadorJogadores />
         </div>
         <div className="flex-1 bg-gray-700 border border-gray-600 rounded-2xl p-8 space-y-6">
           <div className="flex items-center justify-between md:justify-center">
@@ -130,11 +126,8 @@ export default function Home() {
               próxima temporada.
             </li>
           </ol>
-          <div className="flex items-center justify-center">
-            <LinkButton href="https://forms.gle/hoTXNRXo8BLUtCPx7">
-              <span className="mr-2.5">🔗</span>
-              Registrar-se no combine
-            </LinkButton>
+          <div className="text-center flex justify-center">
+            <Button onClick={() => (window.location.href = "/combine")}>Registrar-se no COMBINE</Button>
           </div>
           <div className="bg-gray-500 px-5 py-5 rounded-2xl">
             <div className="flex mb-6 justify-center items-center">
@@ -155,7 +148,8 @@ export default function Home() {
           </div>
         </div>
         <div className="flex md:flex-col flex-col md:block hidden">
-          <ListarTimes/>
+          <ListarTimesMini />
+          <ContadorJogadores />
         </div>
       </div>
     </div>

@@ -9,11 +9,13 @@ import EditarJogador from "../components/editarjogador";
 import AdicionarJogo from "../components/adicionarjogo";
 import EditarJogo from "../components/editarjogo";
 import SendJogosButton from "../components/sendjogosbtn";
+import CadastrarJogadorCombine from "../components/cadastrarjogadorcombine";
+import EditarJogadorCombine from "../components/editarjogadorcombine";
 
 export default function AdminPage() {
   const [senha, setSenha] = useState("");
   const [logado, setLogado] = useState(false);
-  const [secaoAtiva, setSecaoAtiva] = useState<"time" | "jogador" | "jogo" | null>(null);
+  const [secaoAtiva, setSecaoAtiva] = useState<"time" | "jogador" | "jogo" |"combine" | null>(null);
   const senhaCorreta = process.env.NEXT_PUBLIC_ADMIN_PASSWORD;
 
   // Função de login
@@ -76,6 +78,12 @@ export default function AdminPage() {
           >
             Edição de Jogos
           </button>
+          <button
+            onClick={() => setSecaoAtiva("combine")}
+            className="w-full px-4 py-2 rounded-md text-gray-300 transition hover:cursor-pointer hover:bg-gray-100 hover:text-black bg-gray-800"
+          >
+            Combine
+          </button>
         </div>
         {/* Menu Mobile */}
         <div className="md:hidden">
@@ -109,9 +117,15 @@ export default function AdminPage() {
             </button>
             <button
               onClick={() => setSecaoAtiva("jogo")}
-              className="w-full px-10 py-5 md:py-2 rounded-md text-gray-300 transition hover:cursor-pointer hover:bg-gray-100 hover:text-black bg-gray-800 md:mb-0"
+              className="w-full px-10 py-5 md:py-2 rounded-md text-gray-300 transition hover:cursor-pointer hover:bg-gray-100 hover:text-black bg-gray-800 mb-10 md:mb-0"
             >
               Edição de Jogos
+            </button>
+            <button
+              onClick={() => setSecaoAtiva("combine")}
+              className="w-full px-10 py-5 md:py-2 rounded-md text-gray-300 transition hover:cursor-pointer hover:bg-gray-100 hover:text-black bg-gray-800 md:mb-0"
+            >
+              Combine
             </button>
           </div>
         )}
@@ -125,6 +139,9 @@ export default function AdminPage() {
         {secaoAtiva === "time" && <EditarTime />}
         {secaoAtiva === "jogo" && <EditarJogo />}
         {secaoAtiva === "jogo" && <SendJogosButton />}
+        {secaoAtiva === "combine" && <CadastrarJogadorCombine/>}
+        {secaoAtiva === "combine" && <EditarJogadorCombine/>}
+        
       </div>
     </div>
   );

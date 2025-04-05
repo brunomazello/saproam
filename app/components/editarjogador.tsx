@@ -2,7 +2,8 @@
 
 import { useState, useEffect } from "react";
 import { db, doc, getDoc, updateDoc } from "../../firebase";
-import { RotateCw } from "lucide-react";
+import { ToastContainer, toast } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 
 interface Jogador {
   id: string;
@@ -172,7 +173,7 @@ const EditarJogador: React.FC = () => {
     estatisticas: Omit<Jogador, "id" | "nome">
   ) => {
     if (!nomeTime || !jogadorSelecionado) {
-      setError("Todos os campos são obrigatórios.");
+      toast.error("Todos os campos são obrigatórios.");
       return;
     }
 
@@ -212,7 +213,7 @@ const EditarJogador: React.FC = () => {
         [`Jogadores.${jogadorSelecionado}`]: jogadorAtualizado,
       });
 
-      setError("Estatísticas salvas com sucesso!");
+      toast.success("Estatísticas salvas com sucesso!");
       setNovasEstatisticas({}); // Reseta os valores digitados após salvar
     } catch (err) {
       setError("Erro ao salvar as estatísticas.");
@@ -222,45 +223,13 @@ const EditarJogador: React.FC = () => {
   };
 
   return (
-    <div className="flex flex-col items-center w-full">
+    <div className="p-6 max-w-4xl mx-auto">
+      <ToastContainer />
       <h2 className="font-heading font-semibold text-blue text-3xl mb-4 uppercase text-center md:text-left">
         Atualizar Estatísticas de Jogador
       </h2>
       {error && <p className="text-red-500">{error}</p>}
-      <div className="flex align-middle items-center justify-between w-full mb-10">
-        <button
-          onClick={() =>
-            setModoEdicao(modoEdicao === "adicionar" ? "remover" : "adicionar")
-          }
-          onMouseEnter={() =>
-            setTextoBotao(
-              modoEdicao === "adicionar" ? "Mudar para Remover" : "Mudar para Adicionar"
-            )
-          }
-          onMouseLeave={() =>
-            setTextoBotao(
-              modoEdicao === "adicionar" ? "Modo: Adicionar" : "Modo: Remover"
-            )
-          }
-          className={`mt-4 px-5 h-12 font-semibold rounded-xl cursor-pointer transition-colors duration-300
-      ${
-        modoEdicao === "adicionar"
-          ? "bg-green hover:bg-danger text-white"
-          : "bg-danger hover:bg-green text-white"
-      }
-    `}
-        >
-          {textoBotao}
-        </button>
-        {jogadorSelecionado && (
-          <button
-            onClick={fetchJogadores}
-            className="mt-2 w-10 h-10 flex justify-center items-center bg-gray-700 text-white rounded-full hover:bg-gray-600 transition-colors duration-300 hover:bg-green cursor-pointer"
-          >
-            <RotateCw size={20} />
-          </button>
-        )}
-      </div>
+      <div className="flex align-middle items-center justify-between w-full mb-10"></div>
       <select
         value={nomeTime}
         onChange={(e) => setNomeTime(e.target.value)}
