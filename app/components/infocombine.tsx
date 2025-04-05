@@ -20,12 +20,12 @@ export default function InfoCombine() {
         🏀 Combine Draft SAPAL
       </h2>
       <p className="text-gray-300 leading-relaxed text-sm md:text-left text-justify mb-4">
-        O <strong className="text-white font-semibold">Combine Draft</strong> é
+        O <strong className="text-white font-semibold mr-1 ml-1">Combine Draft</strong> é
         a última chance de provar que você merece um lugar na elite.
       </p>
-      <p className="text-gray-300 leading-relaxed text-sm md:text-left text-justify mb-4">
+      <p className="text-gray-300 leading-relaxed text-sm md:text-left text-justify mb-4"> 
         Aqui, os
-        <strong className="text-white font-semibold">
+        <strong className="text-white font-semibold mr-1 ml-1">
           jogadores não draftados
         </strong>
         se enfrentam em partidas intensas, colocando suas habilidades à prova
@@ -35,7 +35,7 @@ export default function InfoCombine() {
       <p className="text-gray-300 leading-relaxed text-sm md:text-left text-justify mb-4">
         Cada posse, cada ponto e cada jogada contam — porque a qualquer momento,
         alguém pode ser
-        <span className="text-blue-400 font-semibold">
+        <span className="text-blue-400 font-semibold ml-1">
           chamado para a liga principal
         </span>
         .
