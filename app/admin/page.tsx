@@ -60,26 +60,26 @@ export default function AdminPage() {
         <div className="hidden md:flex space-x-6">
           <button
             onClick={() => setSecaoAtiva("time")}
-            className="w-full px-4 py-2 bg-gray-500 text-blue rounded-xl hover:bg-blue-700 transition-colors"
+            className="w-full px-6 py-2 rounded-md text-gray-300 transition hover:cursor-pointer hover:bg-gray-100 hover:text-black bg-gray-800"
           >
             Edição de Times
           </button>
           <button
             onClick={() => setSecaoAtiva("jogador")}
-            className="w-full px-4 py-2 bg-gray-500 text-blue rounded-xl hover:bg-blue-700 transition-colors"
+            className="w-full px-4 py-2 rounded-md text-gray-300 transition hover:cursor-pointer hover:bg-gray-100 hover:text-black bg-gray-800"
           >
             Edição de Jogadores
           </button>
           <button
             onClick={() => setSecaoAtiva("jogo")}
-            className="w-full px-4 py-2 bg-gray-500 text-blue rounded-xl hover:bg-blue-700 transition-colors"
+            className="w-full px-4 py-2 rounded-md text-gray-300 transition hover:cursor-pointer hover:bg-gray-100 hover:text-black bg-gray-800"
           >
             Edição de Jogos
           </button>
         </div>
         {/* Menu Mobile */}
         <div className="md:hidden">
-          <button onClick={() => setSecaoAtiva(null)} className="text-white p-5 y-5 bg-gray-500 text-blue rounded-xl hover:bg-blue-700 transition-colors">
+          <button onClick={() => setSecaoAtiva(null)} className="text-white p-5 y-5 rounded-md text-gray-300 transition hover:cursor-pointer hover:bg-gray-100 hover:text-black bg-gray-800">
             Menu
           </button>
         </div>
@@ -97,19 +97,19 @@ export default function AdminPage() {
           <div className="space-y-2 p-4">
             <button
               onClick={() => setSecaoAtiva("time")}
-              className="w-full px-4 py-2 bg-gray-500 text-blue rounded-xl hover:bg-blue-700 transition-colors"
+              className="w-full px-4 py-5 md:py-2 text-gray-300 transition hover:cursor-pointer hover:bg-gray-100 hover:text-black bg-gray-800 mb-10 md:mb-0"
             >
               Edição de Times
             </button>
             <button
               onClick={() => setSecaoAtiva("jogador")}
-              className="w-full px-4 py-2 bg-gray-500 text-blue rounded-xl hover:bg-blue-700 transition-colors"
+              className="w-full px-10 py-5 md:py-2 rounded-md text-gray-300 transition hover:cursor-pointer hover:bg-gray-100 hover:text-black bg-gray-800 mb-10 md:mb-0"
             >
               Edição de Jogadores
             </button>
             <button
               onClick={() => setSecaoAtiva("jogo")}
-              className="w-full px-4 py-2 bg-gray-500 text-blue rounded-xl hover:bg-blue-700 transition-colors"
+              className="w-full px-10 py-5 md:py-2 rounded-md text-gray-300 transition hover:cursor-pointer hover:bg-gray-100 hover:text-black bg-gray-800 md:mb-0"
             >
               Edição de Jogos
             </button>

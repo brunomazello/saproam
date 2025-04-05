@@ -11,6 +11,9 @@ import {
   deleteDoc,
   setDoc,
 } from "../../firebase"; // Importando Firestore
+import { ToastContainer, toast } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
+
 
 const POSICOES = [
   "Point Guard",
@@ -42,7 +45,7 @@ const EditarTime: React.FC = () => {
         const snapshot = await getDocs(timesRef);
         setTimes(snapshot.docs.map((doc) => doc.id));
       } catch (err) {
-        setError("Erro ao carregar os times.");
+        toast.error("Erro ao carregar os times.");
       }
     };
     fetchTimes();
@@ -79,11 +82,11 @@ const EditarTime: React.FC = () => {
         setJogadores(jogadoresArray);
         console.log("Jogadores carregados:", jogadoresArray);
       } else {
-        setError("Time não encontrado.");
+        toast.error("❌Time não encontrado.");
         setJogadores([]); // Zera a lista caso o time não seja encontrado
       }
     } catch (err) {
-      setError("Erro ao carregar os dados do time.");
+      toast.error("❌Erro ao carregar os dados do time.");
     } finally {
       setLoading(false);
     }
@@ -91,12 +94,12 @@ const EditarTime: React.FC = () => {
 
   const editarNomeTime = async () => {
     if (!nomeTime || !novoNomeTime) {
-      setError("Preencha os dois nomes.");
+      toast.error("❌Preencha os dois nomes.");
       return;
     }
 
     if (nomeTime === novoNomeTime) {
-      setError("O novo nome deve ser diferente do atual.");
+      toast.error("❌O novo nome deve ser diferente do atual.");
       return;
     }
 
@@ -108,7 +111,7 @@ const EditarTime: React.FC = () => {
       const timeAtualSnap = await getDoc(timeAtualRef);
 
       if (!timeAtualSnap.exists()) {
-        setError("Time original não encontrado.");
+        toast.error("❌Time original não encontrado.");
         setLoading(false);
         return;
       }
@@ -127,10 +130,10 @@ const EditarTime: React.FC = () => {
       setTimes((prev) =>
         prev.map((time) => (time === nomeTime ? novoNomeTime : time))
       );
-      setError("✅ Nome do time alterado com sucesso!");
+      toast.success("✅ Nome do time alterado com sucesso!");
     } catch (err) {
       console.error(err);
-      setError("Erro ao renomear o time.");
+      toast.error("❌Erro ao renomear o time.");
     } finally {
       setLoading(false);
     }
@@ -146,7 +149,7 @@ const EditarTime: React.FC = () => {
       const timeSnap = await getDoc(timeRef);
 
       if (!timeSnap.exists()) {
-        setError("Time não encontrado.");
+        toast.error("❌Time não encontrado.");
         return;
       }
 
@@ -207,9 +210,9 @@ const EditarTime: React.FC = () => {
         Pontos: pontosCalculados,
       });
 
-      setError("Time atualizado com sucesso!");
+      toast.error("❌Time atualizado com sucesso!");
     } catch (err) {
-      setError("Erro ao atualizar o time.");
+      toast.error("❌Erro ao atualizar o time.");
     } finally {
       setLoading(false);
     }

@@ -1,10 +1,11 @@
 'use client'
 
 import { useState } from "react";
-import { db } from "../../firebase"; // Supondo que o Firestore esteja configurado corretamente
+import { db } from "../../firebase";
 import { doc, getDoc, updateDoc } from "firebase/firestore";
+import { ToastContainer, toast } from "react-toastify";
+import 'react-toastify/dist/ReactToastify.css';
 
-// Definindo o tipo Jogo
 interface Jogo {
   data: string;
   horario: string;
@@ -17,122 +18,116 @@ const AdicionarJogo = () => {
   const [horario, setHorario] = useState("");
   const [time1, setTime1] = useState("");
   const [time2, setTime2] = useState("");
-  const [loading, setLoading] = useState(false); // Estado de carregamento
+  const [loading, setLoading] = useState(false);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
     if (!data || !horario || !time1 || !time2) {
-      alert("Todos os campos são obrigatórios!");
+      toast.error("Todos os campos são obrigatórios!");
       return;
     }
 
-    setLoading(true); // Inicia o carregamento
+    setLoading(true);
 
     try {
-      // Acessando o documento "jogos" na coleção "calendario"
-      const docRef = doc(db, "calendario", "jogos"); // Documento 'jogos' dentro de 'calendario'
+      const docRef = doc(db, "calendario", "jogos");
       const docSnap = await getDoc(docRef);
 
       if (docSnap.exists()) {
-        const partidas = docSnap.data().partidas || {};  // Garantindo que partidas seja um objeto
+        const partidas = docSnap.data().partidas || {};
+        const id = new Date().toISOString(); // ou `crypto.randomUUID()` se preferir
 
-        // Geração de um ID único para a nova partida
-        const id = new Date().toISOString(); // Utilizando a data atual como ID, mas você pode usar algo mais robusto como o Firebase `push()` ou `doc().id`
-
-        // Adicionando a nova partida ao objeto 'partidas'
         partidas[id] = { data, horario, time1, time2 };
 
-        // Atualiza o documento com a nova partida
-        await updateDoc(docRef, {
-          partidas: partidas, // Atualizando o campo 'partidas' com o objeto atualizado
-        });
+        await updateDoc(docRef, { partidas });
 
-        alert("Jogo adicionado com sucesso!");
+        toast.success("Jogo adicionado com sucesso!");
         setData("");
         setHorario("");
         setTime1("");
         setTime2("");
       } else {
-        console.log("Documento 'jogos' não encontrado!");
+        toast.error("Documento 'jogos' não encontrado.");
       }
     } catch (error) {
       console.error("Erro ao adicionar jogo:", error);
-      alert("Erro ao adicionar jogo. Tente novamente.");
+      toast.error("Erro ao adicionar jogo. Tente novamente.");
     } finally {
-      setLoading(false); // Fim do carregamento
+      setLoading(false);
     }
   };
 
   return (
-    <div className="p-6 max-w-full mx-auto">
-      <h2 className="font-heading font-semibold text-blue text-3xl mb-4 uppercase text-center">
-        Adicionar Jogos
+    <div className="p-6 max-w-xl mx-auto bg-gray-800 rounded-lg shadow-lg">
+      <ToastContainer />
+      <h2 className="font-heading font-semibold text-blue text-3xl mb-8 uppercase text-center">
+        Adicionar Jogo
       </h2>
 
-      <form onSubmit={handleSubmit} className="space-y-4 w-full">
-        <div>
-          <label htmlFor="data" className="text-gray-200">
-            Data:
-          </label>
-          <input
-            type="date"
-            id="data"
-            value={data}
-            onChange={(e) => setData(e.target.value)}
-            className="w-full p-2 rounded-md bg-gray-700 text-white"
-            required
-          />
-        </div>
+      <form onSubmit={handleSubmit} className="space-y-6">
+        <div className="grid grid-cols-1 gap-4">
+          <div>
+            <label htmlFor="data" className="block text-sm font-medium text-gray-300">
+              Data
+            </label>
+            <input
+              type="date"
+              id="data"
+              value={data}
+              onChange={(e) => setData(e.target.value)}
+              className="mt-1 w-full p-2 rounded-md bg-gray-700 text-white border border-gray-600 focus:ring-2 focus:ring-blue outline-none"
+            />
+          </div>
 
-        <div>
-          <label htmlFor="horario" className="text-gray-200">
-            Horário:
-          </label>
-          <input
-            type="time"
-            id="horario"
-            value={horario}
-            onChange={(e) => setHorario(e.target.value)}
-            className="w-full p-2 rounded-md bg-gray-700 text-white"
-            required
-          />
-        </div>
+          <div>
+            <label htmlFor="horario" className="block text-sm font-medium text-gray-300">
+              Horário
+            </label>
+            <input
+              type="time"
+              id="horario"
+              value={horario}
+              onChange={(e) => setHorario(e.target.value)}
+              className="mt-1 w-full p-2 rounded-md bg-gray-700 text-white border border-gray-600 focus:ring-2 focus:ring-blue outline-none"
+            />
+          </div>
 
-        <div>
-          <label htmlFor="time1" className="text-gray-200">
-            Time 1:
-          </label>
-          <input
-            type="text"
-            id="time1"
-            value={time1}
-            onChange={(e) => setTime1(e.target.value)}
-            className="w-full p-2 rounded-md bg-gray-700 text-white"
-            required
-          />
-        </div>
+          <div>
+            <label htmlFor="time1" className="block text-sm font-medium text-gray-300">
+              Time 1
+            </label>
+            <input
+              type="text"
+              id="time1"
+              value={time1}
+              onChange={(e) => setTime1(e.target.value)}
+              placeholder="Ex: Lakers"
+              className="mt-1 w-full p-2 rounded-md bg-gray-700 text-white border border-gray-600 focus:ring-2 focus:ring-blue outline-none"
+            />
+          </div>
 
-        <div>
-          <label htmlFor="time2" className="text-gray-200">
-            Time 2:
-          </label>
-          <input
-            type="text"
-            id="time2"
-            value={time2}
-            onChange={(e) => setTime2(e.target.value)}
-            className="w-full p-2 rounded-md bg-gray-700 text-white"
-            required
-          />
+          <div>
+            <label htmlFor="time2" className="block text-sm font-medium text-gray-300">
+              Time 2
+            </label>
+            <input
+              type="text"
+              id="time2"
+              value={time2}
+              onChange={(e) => setTime2(e.target.value)}
+              placeholder="Ex: Heat"
+              className="mt-1 w-full p-2 rounded-md bg-gray-700 text-white border border-gray-600 focus:ring-2 focus:ring-blue outline-none"
+            />
+          </div>
         </div>
 
         <button
           type="submit"
           disabled={loading}
-          className="mt-10 w-full px-5 h-12 bg-gray-500 text-blue font-semibold rounded-xl w-auto cursor-pointer hover:bg-blue hover:text-gray-900 transition-colors duration-300"
+          className="w-full h-12 bg-blue text-white font-semibold rounded-md hover:bg-blue/90 transition duration-300 disabled:opacity-50 disabled:cursor-not-allowed"
         >
-          {loading ? "Carregando..." : "Adicionar Jogo"}
+          {loading ? "Adicionando..." : "Adicionar Jogo"}
         </button>
       </form>
     </div>

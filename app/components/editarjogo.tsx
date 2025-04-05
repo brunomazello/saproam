@@ -1,42 +1,40 @@
 import { useState, useEffect } from "react";
-import { db } from "../../firebase"; // Supondo que o Firestore esteja configurado corretamente
+import { db } from "../../firebase";
 import { doc, getDoc, updateDoc } from "firebase/firestore";
+import { ToastContainer, toast } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 
-// Definindo o tipo Jogo
+// Tipo Jogo
 interface Jogo {
-  id: string; // ID único do jogo
-  data: string; // A data como string (formatada para ordenação)
+  id: string;
+  data: string;
   horario: string;
   time1: string;
   time2: string;
 }
 
 const EditarJogo = () => {
-  const [jogos, setJogos] = useState<Jogo[]>([]); // Lista de jogos
-  const [loading, setLoading] = useState(false); // Estado de carregamento
-  const [error, setError] = useState(""); // Para armazenar possíveis erros
+  const [jogos, setJogos] = useState<Jogo[]>([]);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
+  const [idParaDeletar, setIdParaDeletar] = useState<string | null>(null);
 
-  // Função para buscar todos os jogos no Firestore
   const fetchJogos = async () => {
     try {
       const docRef = doc(db, "calendario", "jogos");
       const docSnap = await getDoc(docRef);
 
       if (docSnap.exists()) {
-        const partidas = docSnap.data().partidas || {}; // Agora 'partidas' é um objeto
-        const jogosList = Object.keys(partidas).map(key => ({
+        const partidas = docSnap.data().partidas || {};
+        const jogosList = Object.keys(partidas).map((key) => ({
           id: key,
-          ...partidas[key]
+          ...partidas[key],
         }));
 
-        // Ordena os jogos pela data (convertida para Date para ordenação precisa)
-        jogosList.sort((a, b) => {
-          const dataA = new Date(a.data); // Converter para objeto Date
-          const dataB = new Date(b.data);
-          return dataA.getTime() - dataB.getTime(); // Ordena de forma crescente
-        });
-
-        setJogos(jogosList); // Armazena todos os jogos ordenados
+        jogosList.sort(
+          (a, b) => new Date(a.data).getTime() - new Date(b.data).getTime()
+        );
+        setJogos(jogosList);
       } else {
         setError("Documento 'jogos' não encontrado!");
       }
@@ -45,48 +43,25 @@ const EditarJogo = () => {
     }
   };
 
-  // Carregar os dados dos jogos ao montar o componente
   useEffect(() => {
     fetchJogos();
   }, []);
 
-  // Função para deletar um jogo
   const handleDeletar = async (id: string) => {
     setLoading(true);
     try {
-      // Atualiza o Firestore removendo o jogo da lista
       const docRef = doc(db, "calendario", "jogos");
       const docSnap = await getDoc(docRef);
 
       if (docSnap.exists()) {
-        const partidas = docSnap.data().partidas || {}; // Obtem as partidas
+        const partidas = docSnap.data().partidas || {};
 
-        // Verifica se o jogo existe antes de tentar deletá-lo
         if (partidas[id]) {
-          delete partidas[id]; // Remove a partida específica com o ID passado
+          delete partidas[id];
+          await updateDoc(docRef, { partidas: { ...partidas } });
 
-          // Verifica se a estrutura do 'partidas' está correta antes de atualizar
-          const partidasAtualizadas = { ...partidas };
-
-          // Atualiza o Firestore com as partidas atualizadas (sem o jogo removido)
-          await updateDoc(docRef, { partidas: partidasAtualizadas });
-
-          // Atualiza o estado local para refletir a remoção
-          const updatedJogosList = Object.keys(partidasAtualizadas).map(key => ({
-            id: key,
-            ...partidasAtualizadas[key]
-          }));
-
-          // Ordena novamente após a remoção
-          updatedJogosList.sort((a, b) => {
-            const dataA = new Date(a.data);
-            const dataB = new Date(b.data);
-            return dataA.getTime() - dataB.getTime();
-          });
-
-          setJogos(updatedJogosList);
-
-          alert("Jogo deletado com sucesso!");
+          toast.success("Jogo deletado com sucesso!");
+          fetchJogos(); // Atualiza a lista completa
         } else {
           setError("Jogo não encontrado para remoção!");
         }
@@ -95,62 +70,120 @@ const EditarJogo = () => {
       }
     } catch (error) {
       console.error("Erro ao deletar jogo:", error);
-      setError("Erro ao deletar jogo. Tente novamente.");
+      toast.error("Erro ao deletar jogo.");
     } finally {
       setLoading(false);
     }
   };
 
-  // Função para adicionar um novo jogo (por exemplo, chamada após a criação de um novo jogo)
-  const handleAdicionarJogo = (novoJogo: Jogo) => {
-    setJogos(prevJogos => {
-      // Adiciona o novo jogo à lista existente
-      const jogosAtualizados = [...prevJogos, novoJogo];
+  const handleAdicionarJogoFirestore = async (novoJogo: Jogo) => {
+    try {
+      const docRef = doc(db, "calendario", "jogos");
+      const docSnap = await getDoc(docRef);
+      const partidas = docSnap.exists() ? docSnap.data().partidas || {} : {};
 
-      // Ordena os jogos pela data
-      jogosAtualizados.sort((a, b) => {
-        const dataA = new Date(a.data);
-        const dataB = new Date(b.data);
-        return dataA.getTime() - dataB.getTime();
-      });
+      // Cria um novo ID único (pode usar timestamp ou UUID)
+      const novoId = `jogo_${Date.now()}`;
 
-      return jogosAtualizados;
-    });
+      const partidasAtualizadas = {
+        ...partidas,
+        [novoId]: {
+          data: novoJogo.data,
+          horario: novoJogo.horario,
+          time1: novoJogo.time1,
+          time2: novoJogo.time2,
+        },
+      };
+
+      // Atualiza no Firestore
+      await updateDoc(docRef, { partidas: partidasAtualizadas });
+
+      toast.success("Jogo adicionado com sucesso!");
+
+      // Atualiza a lista após adicionar
+      fetchJogos();
+    } catch (error) {
+      console.error("Erro ao adicionar jogo:", error);
+      toast.error("Erro ao adicionar jogo.");
+    }
   };
 
   return (
-    <div className="p-6 max-w-full mx-auto">
-      <h2 className="font-heading font-semibold text-blue text-3xl mb-4 uppercase text-center">
-        Gerenciar Jogos
+    <div className="p-6 max-w-4xl mx-auto">
+      <ToastContainer />
+      <h2 className="font-heading font-semibold text-[--color-blue] text-3xl mb-10 uppercase text-center">
+        Gerenciar Calendário
       </h2>
 
-      {/* Exibe erro caso haja algum */}
       {error && <p className="text-red-500">{error}</p>}
 
-      {/* Lista de jogos para o usuário selecionar */}
-      <div className="mb-4">
-        <h3 className="text-gray-200">Jogos:</h3>
-        {jogos.length > 0 ? (
-          <ul className="space-y-2">
-            {jogos.map((jogo) => (
-              <li key={jogo.id} className="flex justify-between items-center bg-gray-700 p-3 rounded-md">
-                <span className="text-white">
-                  {`${jogo.time1} vs ${jogo.time2} - ${jogo.data} ${jogo.horario}`}
-                </span>
-                <button
-                  onClick={() => handleDeletar(jogo.id)}
-                  className="ml-4 text-red-500 hover:text-red-700"
-                  disabled={loading}
-                >
-                  {loading ? "Deletando..." : "Deletar"}
-                </button>
-              </li>
-            ))}
-          </ul>
-        ) : (
-          <p className="text-gray-400">Não há jogos para exibir.</p>
-        )}
-      </div>
+      {jogos.length > 0 ? (
+        <div className="space-y-4">
+          {jogos.map((jogo) => (
+            <div
+              key={jogo.id}
+              className="bg-gray-800 text-white p-4 rounded-md shadow hover:shadow-lg transition duration-300 flex flex-col md:flex-row md:items-center justify-between gap-4"
+            >
+              <div className="flex flex-col md:flex-row md:items-center gap-4 w-full">
+                <div className="text-lg font-semibold text-[--color-purple] whitespace-nowrap">
+                  {jogo.time1} <span className="text-gray-400">vs</span>{" "}
+                  {jogo.time2}
+                </div>
+                <div className="text-sm text-gray-300 md:ml-auto flex flex-col md:flex-row gap-2 md:items-center">
+                  <span className="bg-gray-700 px-3 py-1 rounded-full">
+                    {jogo.data}
+                  </span>
+                  <span className="bg-gray-700 px-3 py-1 rounded-full">
+                    {jogo.horario}
+                  </span>
+                </div>
+              </div>
+              <button
+                onClick={() => setIdParaDeletar(jogo.id)}
+                className="text-sm bg-[--color-danger] text-white hover:bg-red-600 transition px-4 py-2 rounded-md"
+              >
+                Deletar
+              </button>
+              {idParaDeletar && (
+                <div className="fixed inset-0  opacity-10 backdrop-blur-sm flex items-center justify-center z-50">
+                  <div className="bg-gray-900 text-white p-6 rounded-lg shadow-xl w-[90%] max-w-md border border-gray-700">
+                    <h3 className="text-xl font-bold mb-4 text-danger">
+                      Confirmar Exclusão
+                    </h3>
+                    <p className="text-gray-300 mb-6">
+                      Tem certeza que deseja{" "}
+                      <span className="text-danger font-semibold">deletar</span>{" "}
+                      este jogo? Essa ação não pode ser desfeita.
+                    </p>
+
+                    <div className="flex justify-end gap-4">
+                      <button
+                        onClick={() => setIdParaDeletar(null)}
+                        className="px-4 py-2 rounded-md border border-gray-500 text-gray-300 transition hover:cursor-pointer hover:bg-gray-100 hover:text-black"
+                      >
+                        Cancelar
+                      </button>
+                      <button
+                        onClick={() => {
+                          handleDeletar(idParaDeletar!);
+                          setIdParaDeletar(null);
+                        }}
+                        className="px-4 py-2 rounded-md bg-danger hover:bg-red-700 text-white font-semibold transition hover:cursor-pointer"
+                      >
+                        Confirmar
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              )}
+            </div>
+          ))}
+        </div>
+      ) : (
+        <p className="text-gray-400 text-center">
+          Nenhum jogo cadastrado ainda.
+        </p>
+      )}
     </div>
   );
 };
