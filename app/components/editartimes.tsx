@@ -14,7 +14,6 @@ import {
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 
-
 const POSICOES = [
   "Point Guard",
   "Shooting Guard",
@@ -180,21 +179,15 @@ const EditarTime: React.FC = () => {
       // Atualiza os jogadores mantendo os dados antigos e ajustando os jogos
       const jogadoresExistentes = data.Jogadores || {};
       const jogadoresAtualizados = jogadores.reduce((acc, jogador) => {
+        const jogadorAntigo = jogadoresExistentes[jogador.id] || {};
+
         acc[jogador.id] = {
+          ...jogadorAntigo, // mantém tudo o que já existe, inclusive FGA, FGM etc.
           Nome: jogador.Nome,
           Posição: jogador.Posição,
-          Jogos: Math.max(
-            (jogadoresExistentes[jogador.id]?.Jogos || 0) + jogosCalculados,
-            0
-          ),
-          assistencias: jogadoresExistentes[jogador.id]?.assistencias || 0,
-          bloqueios: jogadoresExistentes[jogador.id]?.bloqueios || 0,
-          erros: jogadoresExistentes[jogador.id]?.erros || 0,
-          faltas: jogadoresExistentes[jogador.id]?.faltas || 0,
-          pontuacao: jogadoresExistentes[jogador.id]?.pontuacao || 0,
-          rebotes: jogadoresExistentes[jogador.id]?.rebotes || 0,
-          roubos: jogadoresExistentes[jogador.id]?.roubos || 0,
+          Jogos: Math.max((jogadorAntigo.Jogos || 0) + jogosCalculados, 0),
         };
+
         return acc;
       }, {});
 
@@ -236,7 +229,7 @@ const EditarTime: React.FC = () => {
 
   return (
     <div className="p-6 max-w-4xl mx-auto">
-      <ToastContainer/>
+      <ToastContainer />
       <h2 className="font-heading font-semibold text-blue text-3xl mb-4 uppercase">
         Editar Time
       </h2>

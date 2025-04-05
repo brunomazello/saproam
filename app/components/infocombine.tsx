@@ -46,7 +46,8 @@ export default function InfoCombine() {
         da frente, com atitude e performance.
       </p>
       <p className="text-lg leading-relaxed font-semibold text-white mt-6 text-center mb-4">
-        Você pode não ter sido escolhido antes. <br/>Mas aqui, {""}
+        Você pode não ter sido escolhido antes. <br />
+        Mas aqui, {""}
         <span className="text-blue-400">você ainda pode ser chamado.</span>
         <br />
         <br />
