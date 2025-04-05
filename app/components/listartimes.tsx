@@ -100,7 +100,7 @@ const ListarTimes: React.FC = () => {
                   ? "bg-danger text-black"
                   : index >= 4
                   ? "bg-blue text-black"
-                  : "bg-gray-200 text-black"
+                  : "bg-green text-black"
               }`}
             >
               <td className="px-2 py-2 border-b font-bold">{index + 1}</td>{" "}
