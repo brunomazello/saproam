@@ -140,7 +140,7 @@ const EditarJogo = () => {
               </div>
               <button
                 onClick={() => setIdParaDeletar(jogo.id)}
-                className="text-sm bg-[--color-danger] text-white hover:bg-red-600 transition px-4 py-2 rounded-md"
+                className="text-sm bg-danger text-white hover:bg-red-600 transition px-4 py-2 rounded-md"
               >
                 Deletar
               </button>
