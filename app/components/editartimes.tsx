@@ -1,351 +1,234 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useEffect, useState } from "react";
+import { db } from "../../firebase";
 import {
-  db,
   collection,
+  getDocs,
   doc,
   getDoc,
-  getDocs,
   updateDoc,
-  deleteDoc,
-  setDoc,
-} from "../../firebase"; // Importando Firestore
+} from "firebase/firestore";
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 
-const POSICOES = [
-  "Point Guard",
-  "Shooting Guard",
-  "Small Forward",
-  "Power Forward",
-  "Center",
-];
+const RegistrarResultado = () => {
+  const [jogos, setJogos] = useState<any[]>([]);
+  const [jogoSelecionado, setJogoSelecionado] = useState<string>("");
 
-const EditarTime: React.FC = () => {
-  const [times, setTimes] = useState<string[]>([]);
-  const [nomeTime, setNomeTime] = useState<string>("");
-  const [dono, setDono] = useState<string>("");
-  const [jogadores, setJogadores] = useState<any[]>([]);
-  const [vitorias, setVitorias] = useState<number>(0);
-  const [derrotas, setDerrotas] = useState<number>(0);
-  const [empates, setEmpates] = useState<number>(0);
-  const [pontosFeitos, setPontosFeitos] = useState<number>(0);
-  const [pontosRecebidos, setPontosRecebidos] = useState<number>(0);
-  const [loading, setLoading] = useState<boolean>(false);
-  const [error, setError] = useState<string | null>(null);
-  const [novoNomeTime, setNovoNomeTime] = useState<string>("");
+  // Novos estados para dois jogos
+  const [pontuacaoTime1Jogo1, setPontuacaoTime1Jogo1] = useState<number>(0);
+  const [pontuacaoTime1Jogo2, setPontuacaoTime1Jogo2] = useState<number>(0);
+  const [pontuacaoTime2Jogo1, setPontuacaoTime2Jogo1] = useState<number>(0);
+  const [pontuacaoTime2Jogo2, setPontuacaoTime2Jogo2] = useState<number>(0);
 
-  // Carregar os times do Firebase
+  const [loading, setLoading] = useState(false);
+
   useEffect(() => {
-    const fetchTimes = async () => {
-      try {
-        const timesRef = collection(db, "times");
-        const snapshot = await getDocs(timesRef);
-        setTimes(snapshot.docs.map((doc) => doc.id));
-      } catch (err) {
-        toast.error("Erro ao carregar os times.");
-      }
+    const fetchJogos = async () => {
+      const snapshot = await getDocs(collection(db, "calendario_v2"));
+      const listaJogos = snapshot.docs.map((doc) => ({
+        id: doc.id,
+        ...doc.data(),
+      }));
+      setJogos(listaJogos);
     };
-    fetchTimes();
+    fetchJogos();
   }, []);
 
-  // Carregar os dados de um time específico
-  const carregarDadosTime = async (nome: string) => {
-    if (!nome) return;
-    setLoading(true);
-    setError(null);
+  const atualizarTime = async (nomeTime: string, dados: any) => {
+    const timeRef = doc(db, "times_v2", nomeTime);
+    const snap = await getDoc(timeRef);
 
-    try {
-      const timeRef = doc(db, "times", nome);
-      const timeSnap = await getDoc(timeRef);
-
-      if (timeSnap.exists()) {
-        const data = timeSnap.data();
-        setDono(data.Dono || "");
-        setVitorias(data.Vitorias || 0);
-        setDerrotas(data.Derrotas || 0);
-        setEmpates(data.Empates || 0);
-        setPontosFeitos(data.pontosFeitos || 0);
-        setPontosRecebidos(data.pontosRecebidos || 0);
-
-        // 🔥 Garante que Jogadores será um array
-        const jogadoresArray =
-          data.Jogadores && typeof data.Jogadores === "object"
-            ? Object.keys(data.Jogadores).map((id) => ({
-                id, // Mantém o ID do jogador
-                ...data.Jogadores[id], // Copia os dados do jogador
-              }))
-            : [];
-
-        setJogadores(jogadoresArray);
-        console.log("Jogadores carregados:", jogadoresArray);
-      } else {
-        toast.error("❌Time não encontrado.");
-        setJogadores([]); // Zera a lista caso o time não seja encontrado
-      }
-    } catch (err) {
-      toast.error("❌Erro ao carregar os dados do time.");
-    } finally {
-      setLoading(false);
+    if (!snap.exists()) {
+      toast.error(`❌ Time ${nomeTime} não encontrado.`);
+      return;
     }
+
+    const dataAtual = snap.data();
+    const vitorias = (dataAtual.vitorias || 0) + (dados.resultado === "vitoria" ? 1 : 0);
+    const derrotas = (dataAtual.derrotas || 0) + (dados.resultado === "derrota" ? 1 : 0);
+    const empates = (dataAtual.empates || 0) + (dados.resultado === "empate" ? 1 : 0);
+    const jogosAtualizados = (dataAtual.jogos || 0) + 2;
+    const pontos = vitorias * 3 + empates;
+
+    const pontosFeitos = (dataAtual.pontosFeitos || 0) + dados.pontosFeitos;
+    const pontosRecebidos = (dataAtual.pontosRecebidos || 0) + dados.pontosRecebidos;
+
+    await updateDoc(timeRef, {
+      vitorias,
+      derrotas,
+      empates,
+      jogos: jogosAtualizados,
+      pontos,
+      pontosFeitos,
+      pontosRecebidos,
+    });
   };
 
-  const editarNomeTime = async () => {
-    if (!nomeTime || !novoNomeTime) {
-      toast.error("❌Preencha os dois nomes.");
-      return;
-    }
+  const atualizarJogadores = async (
+    nomeTime: string,
+    pontosFeitos: number,
+    pontosRecebidos: number,
+    resultado: "vitoria" | "derrota" | "empate"
+  ) => {
+    const jogadoresRef = collection(db, "times_v2", nomeTime, "jogadores");
+    const snapshot = await getDocs(jogadoresRef);
 
-    if (nomeTime === novoNomeTime) {
-      toast.error("❌O novo nome deve ser diferente do atual.");
-      return;
-    }
+    snapshot.forEach(async (docJogador) => {
+      const jogadorRef = doc(db, "times_v2", nomeTime, "jogadores", docJogador.id);
+      const dataJogador = docJogador.data();
 
-    setLoading(true);
-    setError(null);
+      const jogosAtualizados = (dataJogador.jogos || 0) + 2;
+      const vitorias = (dataJogador.vitorias || 0) + (resultado === "vitoria" ? 1 : 0);
+      const derrotas = (dataJogador.derrotas || 0) + (resultado === "derrota" ? 1 : 0);
+      const empates = (dataJogador.empates || 0) + (resultado === "empate" ? 1 : 0);
+      const feitos = (dataJogador.pontosFeitos || 0) + pontosFeitos;
+      const recebidos = (dataJogador.pontosRecebidos || 0) + pontosRecebidos;
 
-    try {
-      const timeAtualRef = doc(db, "times", nomeTime);
-      const timeAtualSnap = await getDoc(timeAtualRef);
-
-      if (!timeAtualSnap.exists()) {
-        toast.error("❌Time original não encontrado.");
-        setLoading(false);
-        return;
-      }
-
-      const dadosDoTime = timeAtualSnap.data();
-
-      // Cria o novo documento com o novo nome
-      const novoTimeRef = doc(db, "times", novoNomeTime.toUpperCase());
-      await setDoc(novoTimeRef, dadosDoTime);
-
-      // Deleta o documento antigo
-      await deleteDoc(timeAtualRef);
-
-      // Atualiza o estado local
-      setNomeTime(novoNomeTime);
-      setTimes((prev) =>
-        prev.map((time) => (time === nomeTime ? novoNomeTime : time))
-      );
-      toast.success("✅ Nome do time alterado com sucesso!");
-    } catch (err) {
-      console.error(err);
-      toast.error("❌Erro ao renomear o time.");
-    } finally {
-      setLoading(false);
-    }
+      await updateDoc(jogadorRef, {
+        jogos: jogosAtualizados,
+        vitorias,
+        derrotas,
+        empates,
+        pontosFeitos: feitos,
+        pontosRecebidos: recebidos,
+      });
+    });
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (!jogoSelecionado) return;
     setLoading(true);
-    setError(null);
+
+    const jogo = jogos.find((j) => j.id === jogoSelecionado);
+    if (!jogo) {
+      toast.error("Jogo não encontrado.");
+      setLoading(false);
+      return;
+    }
+
+    const { time1, time2 } = jogo;
+
+    // Soma total dos pontos
+    const totalTime1 = pontuacaoTime1Jogo1 + pontuacaoTime1Jogo2;
+    const totalTime2 = pontuacaoTime2Jogo1 + pontuacaoTime2Jogo2;
+
+    const isEmpate = totalTime1 === totalTime2;
+    const vencedor = totalTime1 > totalTime2 ? time1 : isEmpate ? null : time2;
+    const perdedor = vencedor === time1 ? time2 : time1;
 
     try {
-      const timeRef = doc(db, "times", nomeTime);
-      const timeSnap = await getDoc(timeRef);
-
-      if (!timeSnap.exists()) {
-        toast.error("❌Time não encontrado.");
-        return;
-      }
-
-      const data = timeSnap.data();
-      const vitoriasAntigas = data.Vitorias || 0;
-      const derrotasAntigas = data.Derrotas || 0;
-      const empatesAntigos = data.Empates || 0;
-      const jogosAntigos = data.Jogos || 0;
-
-      // 🔹 **Calculando a diferença nos resultados**
-      const diferencaVitorias = vitorias - vitoriasAntigas;
-      console.log(diferencaVitorias);
-      const diferencaDerrotas = derrotas - derrotasAntigas;
-      console.log(diferencaDerrotas);
-      const diferencaEmpates = empates - empatesAntigos;
-      console.log(diferencaEmpates);
-
-      // 🔹 **Cada jogo deve contar como 2**
-      const jogosCalculados =
-        (diferencaVitorias + diferencaDerrotas + diferencaEmpates) * 2;
-
-      // 🔹 **Somando corretamente os jogos**
-      const jogosAtualizados = Math.max(jogosAntigos + jogosCalculados, 0);
-
-      // 🔹 **Calcula os pontos corretamente**
-      const pontosCalculados = vitorias * 3 + empates * 1;
-
-      // Atualiza os jogadores mantendo os dados antigos e ajustando os jogos
-      const jogadoresExistentes = data.Jogadores || {};
-      const jogadoresAtualizados = jogadores.reduce((acc, jogador) => {
-        const jogadorAntigo = jogadoresExistentes[jogador.id] || {};
-
-        acc[jogador.id] = {
-          ...jogadorAntigo, // mantém tudo o que já existe, inclusive FGA, FGM etc.
-          Nome: jogador.Nome,
-          Posição: jogador.Posição,
-          Jogos: Math.max((jogadorAntigo.Jogos || 0) + jogosCalculados, 0),
-        };
-
-        return acc;
-      }, {});
-
-      // Atualiza o banco de dados
-      await updateDoc(timeRef, {
-        Jogadores: jogadoresAtualizados,
-        Vitorias: vitorias,
-        Derrotas: derrotas,
-        Empates: empates,
-        Jogos: jogosAtualizados, // ✅ **Agora os jogos são dobrados corretamente**
-        pontosFeitos: pontosFeitos,
-        pontosRecebidos: pontosRecebidos,
-        Pontos: pontosCalculados,
+      const jogoRef = doc(db, "calendario_v2", jogoSelecionado);
+      await updateDoc(jogoRef, {
+        placar: {
+          [time1]: totalTime1,
+          [time2]: totalTime2,
+        },
       });
 
-      toast.success("Time atualizado com sucesso!");
+      await atualizarTime(time1, {
+        pontosFeitos: totalTime1,
+        pontosRecebidos: totalTime2,
+        resultado: isEmpate ? "empate" : vencedor === time1 ? "vitoria" : "derrota",
+      });
+
+      await atualizarTime(time2, {
+        pontosFeitos: totalTime2,
+        pontosRecebidos: totalTime1,
+        resultado: isEmpate ? "empate" : vencedor === time2 ? "vitoria" : "derrota",
+      });
+
+      await atualizarJogadores(
+        time1,
+        totalTime1,
+        totalTime2,
+        isEmpate ? "empate" : vencedor === time1 ? "vitoria" : "derrota"
+      );
+
+      await atualizarJogadores(
+        time2,
+        totalTime2,
+        totalTime1,
+        isEmpate ? "empate" : vencedor === time2 ? "vitoria" : "derrota"
+      );
+
+      toast.success("✅ Resultado registrado com sucesso!");
     } catch (err) {
-      toast.error("❌Erro ao atualizar o time.");
+      toast.error("❌ Erro ao registrar resultado.");
+      console.error(err);
     } finally {
       setLoading(false);
     }
   };
 
-  // Atualiza o estado ao editar um jogador
-  const handleJogadorChange = (id: string, campo: string, valor: any) => {
-    setJogadores((prevJogadores) =>
-      prevJogadores.map((jogador) =>
-        jogador.id === id ? { ...jogador, [campo]: valor } : jogador
-      )
-    );
-  };
-
-  // Remove um jogador da lista
-  const handleRemoverJogador = (id: string) => {
-    setJogadores((prevJogadores) =>
-      prevJogadores.filter((jogador) => jogador.id !== id)
-    );
-  };
-
   return (
-    <div className="p-6 max-w-4xl mx-auto">
+    <div className="p-6 max-w-2xl mx-auto bg-gray-900 rounded-lg shadow-lg">
       <ToastContainer />
-      <h2 className="font-heading font-semibold text-blue text-3xl mb-4 uppercase">
-        Editar Time
+      <h2 className="text-2xl font-bold text-blue-400 mb-6 uppercase tracking-wider">
+        Registrar Resultado
       </h2>
-      {error && <p className="text-danger text-sm mb-3">{error}</p>}
-      <form onSubmit={handleSubmit} className="space-y-4 w-full">
+
+      <form onSubmit={handleSubmit} className="space-y-6">
         <div>
-          <label className="block text-gray-300">Nome do Time</label>
+          <label className="block text-gray-200 mb-1">Selecione o jogo:</label>
           <select
-            value={nomeTime}
-            onChange={(e) => {
-              setNomeTime(e.target.value);
-              carregarDadosTime(e.target.value);
-            }}
-            className="w-full p-2 rounded border border-gray-600 bg-gray-800 text-white"
-            required
+            value={jogoSelecionado}
+            onChange={(e) => setJogoSelecionado(e.target.value)}
+            className="w-full p-3 rounded bg-gray-800 text-white"
           >
-            <option value="">Selecione um time</option>
-            {times.map((time) => (
-              <option key={time} value={time}>
-                {time}
+            <option value="">Escolha um jogo</option>
+            {jogos.map((jogo) => (
+              <option key={jogo.id} value={jogo.id}>
+                {jogo.time1} vs {jogo.time2} - {jogo.data}
               </option>
             ))}
           </select>
         </div>
 
-        {/* <div>
-          <label className="block text-gray-300">Editar nome do time:</label>
-          <input
-            type="text"
-            value={novoNomeTime}
-            onChange={(e) => setNovoNomeTime(e.target.value)}
-            placeholder="Novo nome do time"
-            className="w-full p-2 rounded border border-gray-600 bg-gray-800 text-white"
-          />
-          <button onClick={editarNomeTime} disabled={!novoNomeTime}>
-            Salvar novo nome
-          </button>
-        </div> */}
+        <div className="grid grid-cols-2 gap-4">
+          <div>
+            <label className="block text-gray-200 mb-1">Jogo 1 - Time 1:</label>
+            <input
+              type="number"
+              onChange={(e) => setPontuacaoTime1Jogo1(Number(e.target.value))}
+              className="w-full p-3 rounded bg-gray-800 text-white"
+            />
+            <label className="block text-gray-200 mt-2 mb-1">Jogo 2 - Time 1:</label>
+            <input
+              type="number"
+              onChange={(e) => setPontuacaoTime1Jogo2(Number(e.target.value))}
+              className="w-full p-3 rounded bg-gray-800 text-white"
+            />
+          </div>
 
-        <div>
-          <label className="block text-gray-300">Vitórias</label>
-          <input
-            type="number"
-            value={vitorias}
-            onChange={(e) => setVitorias(Number(e.target.value) || 0)}
-            className="w-full p-2 rounded border border-gray-600 bg-gray-800 text-white"
-          />
+          <div>
+            <label className="block text-gray-200 mb-1">Jogo 1 - Time 2:</label>
+            <input
+              type="number"
+              onChange={(e) => setPontuacaoTime2Jogo1(Number(e.target.value))}
+              className="w-full p-3 rounded bg-gray-800 text-white"
+            />
+            <label className="block text-gray-200 mt-2 mb-1">Jogo 2 - Time 2:</label>
+            <input
+              type="number"
+              onChange={(e) => setPontuacaoTime2Jogo2(Number(e.target.value))}
+              className="w-full p-3 rounded bg-gray-800 text-white"
+            />
+          </div>
         </div>
 
-        <div>
-          <label className="block text-gray-300">Derrotas</label>
-          <input
-            type="number"
-            value={derrotas}
-            onChange={(e) => setDerrotas(Number(e.target.value) || 0)}
-            className="w-full p-2 rounded border border-gray-600 bg-gray-800 text-white"
-          />
-        </div>
-
-        <div>
-          <label className="block text-gray-300">Empates</label>
-          <input
-            type="number"
-            value={empates}
-            onChange={(e) => setEmpates(Number(e.target.value) || 0)}
-            className="w-full p-2 rounded border border-gray-600 bg-gray-800 text-white"
-          />
-        </div>
-
-        {/* Lista de jogadores */}
-        {jogadores.length > 0 ? (
-          jogadores.map((jogador) => (
-            <div
-              key={jogador.id}
-              className="p-3 rounded-lg bg-gray-800 text-white"
-            >
-              <input
-                type="text"
-                value={jogador.Nome || ""}
-                onChange={(e) =>
-                  handleJogadorChange(jogador.id, "Nome", e.target.value)
-                }
-                className="w-full p-2 rounded border border-gray-600 bg-gray-900 text-white"
-              />
-              <select
-                value={jogador.Posição || ""}
-                onChange={(e) =>
-                  handleJogadorChange(jogador.id, "Posição", e.target.value)
-                }
-                className="w-full p-2 mt-2 rounded border border-gray-600 bg-gray-900 text-white"
-              >
-                {POSICOES.map((pos) => (
-                  <option key={pos} value={pos}>
-                    {pos}
-                  </option>
-                ))}
-              </select>
-              <button
-                type="button"
-                onClick={() => handleRemoverJogador(jogador.id)}
-                className="mt-8 px-3 py-1 bg-danger w-full rounded text-white"
-              >
-                Remover
-              </button>
-            </div>
-          ))
-        ) : (
-          <p className="text-gray-400">Nenhum jogador encontrado.</p>
-        )}
-
-        <button type="submit" disabled={loading} className="btn">
-          {loading ? "Carregando..." : "Salvar"}
+        <button
+          type="submit"
+          disabled={loading}
+          className="w-full py-3 px-4 bg-blue-500 hover:bg-blue-600 text-white font-semibold rounded transition duration-200"
+        >
+          {loading ? "Registrando..." : "Salvar Resultado"}
         </button>
       </form>
     </div>
   );
 };
 
-export default EditarTime;
+export default RegistrarResultado;

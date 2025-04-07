@@ -1,27 +1,35 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { db, doc, getDoc, updateDoc } from "../../firebase";
+import {
+  db,
+  collection,
+  doc,
+  getDoc,
+  getDocs,
+  updateDoc,
+} from "../../firebase";
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 
-interface Jogador {
+type Jogador = {
   id: string;
   nome: string;
-  pontuacao: number;
-  rebotes: number;
-  assistencias: number;
-  roubos: number;
-  bloqueios: number;
-  faltas: number;
-  erros: number;
-  fgm: number;
-  fga: number;
-  tpm: number;
-  tpa: number;
-  ftm: number;
-  fta: number;
-}
+  pontuacao?: number;
+  rebotes?: number;
+  assistencias?: number;
+  roubos?: number;
+  bloqueios?: number;
+  faltas?: number;
+  erros?: number;
+  fgm?: number;
+  fga?: number;
+  tpm?: number;
+  tpa?: number;
+  ftm?: number;
+  fta?: number;
+  [key: string]: any; // <- adiciona isso pra aceitar os extras
+};
 
 const EditarJogador: React.FC = () => {
   const [times, setTimes] = useState<string[]>([]);
@@ -46,13 +54,15 @@ const EditarJogador: React.FC = () => {
     fta: 0,
   });
 
+  const [novasEstatisticas, setNovasEstatisticas] = useState<
+    Partial<Omit<Jogador, "id" | "nome">>
+  >({});
+  const [jogosDoTime, setJogosDoTime] = useState<any[]>([]);
   const [loading, setLoading] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
+  const [jogoSelecionado, setJogoSelecionado] = useState<any | null>(null);
   const [modoEdicao, setModoEdicao] = useState<"adicionar" | "remover">(
     "adicionar"
-  );
-  const [textoBotao, setTextoBotao] = useState(
-    modoEdicao === "adicionar" ? "Modo: Adicionar" : "Modo: Remover"
   );
 
   useEffect(() => {
@@ -67,155 +77,190 @@ const EditarJogador: React.FC = () => {
     ]);
   }, []);
 
-  const [novasEstatisticas, setNovasEstatisticas] = useState<
-    Partial<Omit<Jogador, "id" | "nome">>
-  >({});
+  useEffect(() => {
+    if (jogosDoTime.length > 0) {
+      setJogoSelecionado(jogosDoTime[0]); // Seleciona o primeiro jogo por padrão
+    }
+  }, [jogosDoTime]);
 
   const fetchJogadores = async () => {
+    if (!nomeTime) return;
+
     setLoading(true);
     setError(null);
 
-    // 🔹 Salvar o jogador atual antes da atualização
-    const jogadorAtual = jogadorSelecionado;
-
     try {
-      const timeRef = doc(db, "times", nomeTime);
-      const timeSnap = await getDoc(timeRef);
+      const jogadoresRef = collection(db, "times_v2", nomeTime, "jogadores");
+      const snapshot = await getDocs(jogadoresRef);
 
-      if (timeSnap.exists()) {
-        const timeData = timeSnap.data();
-        const jogadoresData = timeData.Jogadores || {};
+      const listaJogadores: Jogador[] = snapshot.docs.map((doc) => {
+        const data = doc.data();
+        return {
+          id: doc.id,
+          nome: data.nome || "Sem nome",
+          pontuacao: data.pontuacao || 0,
+          rebotes: data.rebotes || 0,
+          assistencias: data.assistencias || 0,
+          roubos: data.roubos || 0,
+          bloqueios: data.bloqueios || 0,
+          faltas: data.faltas || 0,
+          erros: data.erros || 0,
+          fgm: data.fgm || 0,
+          fga: data.fga || 0,
+          tpm: data.tpm || 0,
+          tpa: data.tpa || 0,
+          ftm: data.ftm || 0,
+          fta: data.fta || 0,
+        };
+      });
 
-        const listaJogadores = Object.keys(jogadoresData).map((key) => ({
-          id: key,
-          nome: jogadoresData[key].Nome,
-          pontuacao: jogadoresData[key].pontuacao || 0,
-          rebotes: jogadoresData[key].rebotes || 0,
-          assistencias: jogadoresData[key].assistencias || 0,
-          roubos: jogadoresData[key].roubos || 0,
-          bloqueios: jogadoresData[key].bloqueios || 0,
-          faltas: jogadoresData[key].faltas || 0,
-          erros: jogadoresData[key].erros || 0,
-          fgm: jogadoresData[key].fgm || 0,
-          fga: jogadoresData[key].fga || 0,
-          tpm: jogadoresData[key].tpm || 0,
-          tpa: jogadoresData[key].tpa || 0,
-          ftm: jogadoresData[key].ftm || 0,
-          fta: jogadoresData[key].fta || 0,
-        }));
-
-        setJogadores(listaJogadores);
-
-        // 🔹 Restaurar o jogador selecionado se ainda existir na lista
-        const jogadorAindaExiste = listaJogadores.find(
-          (j) => j.id === jogadorAtual
-        );
-        if (jogadorAindaExiste) {
-          setJogadorSelecionado(jogadorAtual);
-        }
-      } else {
-        setJogadores([]);
-      }
+      setJogadores(listaJogadores);
     } catch (err) {
       setError("Erro ao carregar jogadores.");
+      console.error(err);
     } finally {
       setLoading(false);
     }
   };
 
+  const fetchJogosDoTime = async (timeId: string) => {
+    try {
+      const calendarioRef = collection(db, "calendario_v2");
+      const snapshot = await getDocs(calendarioRef);
+
+      const jogosDoTime = snapshot.docs
+        .filter((doc) => {
+          const data = doc.data();
+          return data.time1 === timeId || data.time2 === timeId;
+        })
+        .map((doc) => ({
+          id: doc.id,
+          ...doc.data(),
+        }));
+
+      return jogosDoTime;
+    } catch (error) {
+      console.error("Erro ao buscar jogos do time:", error);
+      return [];
+    }
+  };
+
   useEffect(() => {
-    if (!nomeTime) return;
-    fetchJogadores();
+    const buscarDados = async () => {
+      if (!nomeTime) return;
+
+      await fetchJogadores();
+
+      const jogos = await fetchJogosDoTime(nomeTime);
+      setJogosDoTime(jogos);
+    };
+
+    buscarDados();
   }, [nomeTime]);
 
   useEffect(() => {
-    if (!jogadorSelecionado) {
-      setEstatisticas({
-        // Reseta estatísticas ao mudar de jogador
-        pontuacao: 0,
-        rebotes: 0,
-        assistencias: 0,
-        roubos: 0,
-        bloqueios: 0,
-        faltas: 0,
-        erros: 0,
-        fgm: 0,
-        fga: 0,
-        tpm: 0,
-        tpa: 0,
-        ftm: 0,
-        fta: 0,
-      });
-      return;
-    }
-
     const jogador = jogadores.find((j) => j.id === jogadorSelecionado);
-    if (jogador) {
-      setEstatisticas({
-        pontuacao: jogador.pontuacao,
-        rebotes: jogador.rebotes,
-        assistencias: jogador.assistencias,
-        roubos: jogador.roubos,
-        bloqueios: jogador.bloqueios,
-        faltas: jogador.faltas,
-        erros: jogador.erros,
-        fgm: jogador.fgm,
-        fga: jogador.fga,
-        tpm: jogador.tpm,
-        tpa: jogador.tpa,
-        ftm: jogador.ftm,
-        fta: jogador.fta,
-      });
-    }
+    setEstatisticas(
+      jogador
+        ? { ...jogador }
+        : {
+            pontuacao: 0,
+            rebotes: 0,
+            assistencias: 0,
+            roubos: 0,
+            bloqueios: 0,
+            faltas: 0,
+            erros: 0,
+            fgm: 0,
+            fga: 0,
+            tpm: 0,
+            tpa: 0,
+            ftm: 0,
+            fta: 0,
+          }
+    );
   }, [jogadorSelecionado, jogadores]);
 
-  const atualizarEstatisticas = async (
-    estatisticas: Omit<Jogador, "id" | "nome">
-  ) => {
-    if (!nomeTime || !jogadorSelecionado) {
+  const atualizarEstatisticas = async () => {
+    if (!nomeTime || !jogadorSelecionado || !jogoSelecionado) {
       toast.error("Todos os campos são obrigatórios.");
       return;
     }
 
     setLoading(true);
-    setError(null);
-
     try {
-      const timeRef = doc(db, "times", nomeTime);
-      const timeSnap = await getDoc(timeRef);
+      // Atualiza as estatísticas do jogador no time
+      const jogadorRef = doc(
+        db,
+        "times_v2",
+        nomeTime,
+        "jogadores",
+        jogadorSelecionado
+      );
+      const jogadorSnap = await getDoc(jogadorRef);
 
-      if (!timeSnap.exists()) {
-        setError("Time não encontrado.");
+      if (!jogadorSnap.exists()) {
+        toast.error("Jogador não encontrado.");
         return;
       }
 
-      const timeData = timeSnap.data();
-      const jogadoresData = timeData.Jogadores || {};
+      const dadosAtuais = jogadorSnap.data();
 
-      const jogadorAtual = jogadoresData[jogadorSelecionado] || {};
-
-      const jogadorAtualizado = (
-        Object.keys(novasEstatisticas) as Array<keyof typeof novasEstatisticas>
-      ).reduce(
-        (acc, key) => ({
-          ...acc,
-          [key]:
+      const estatisticasAtualizadas = Object.keys(novasEstatisticas).reduce(
+        (acc, key) => {
+          const valorAtual = dadosAtuais[key] || 0;
+          const valorNovo =
+            novasEstatisticas[key as keyof typeof novasEstatisticas] || 0;
+          acc[key] =
             modoEdicao === "adicionar"
-              ? (jogadorAtual[key] || 0) + (novasEstatisticas[key] || 0) // 🔹 Soma no modo "adicionar"
-              : Math.max(
-                  0,
-                  (jogadorAtual[key] || 0) - (novasEstatisticas[key] || 0)
-                ), // 🔹 Subtrai no modo "remover", sem valores negativos
-        }),
-        jogadorAtual
+              ? valorAtual + valorNovo
+              : Math.max(0, valorAtual - valorNovo);
+          return acc;
+        },
+        {} as Record<string, number>
       );
-      await updateDoc(timeRef, {
-        [`Jogadores.${jogadorSelecionado}`]: jogadorAtualizado,
-      });
 
-      toast.success("Estatísticas salvas com sucesso!");
-      setNovasEstatisticas({}); // Reseta os valores digitados após salvar
+      // Atualiza as estatísticas do jogador dentro do time no Firestore
+      await updateDoc(jogadorRef, estatisticasAtualizadas);
+
+      // Agora, atualiza as estatísticas dentro do jogo no calendário (já feito anteriormente)
+      const jogoRef = doc(
+        db,
+        "calendario_v2", // Coleção de jogos
+        jogoSelecionado.id // Documento do jogo (como okc_vs_firewolf_20250407)
+      );
+
+      const jogoSnap = await getDoc(jogoRef);
+      if (jogoSnap.exists()) {
+        const dadosJogo = jogoSnap.data();
+
+        const jogadoresNoJogo = dadosJogo.jogadores || {};
+        if (jogadoresNoJogo[nomeTime]) {
+          const jogadoresTime = jogadoresNoJogo[nomeTime];
+
+          // Atualiza as estatísticas do jogador dentro do time
+          jogadoresTime[jogadorSelecionado] = {
+            ...jogadoresTime[jogadorSelecionado], // Mantém as estatísticas existentes
+            ...estatisticasAtualizadas, // Atualiza com as novas estatísticas
+          };
+
+          // Atualiza as estatísticas no jogo
+          await updateDoc(jogoRef, {
+            [`jogadores.${nomeTime}`]: jogadoresTime, // Atualiza o time específico
+          });
+
+          toast.success("Estatísticas atualizadas com sucesso!");
+        } else {
+          toast.error("Time não encontrado no jogo.");
+        }
+      } else {
+        toast.error("Jogo não encontrado no calendário.");
+      }
+
+      setNovasEstatisticas({}); // Limpa as novas estatísticas
+      fetchJogadores(); // Recarrega os jogadores
     } catch (err) {
+      console.error("Erro ao salvar as estatísticas:", err);
       setError("Erro ao salvar as estatísticas.");
     } finally {
       setLoading(false);
@@ -228,21 +273,66 @@ const EditarJogador: React.FC = () => {
       <h2 className="font-heading font-semibold text-blue text-3xl mb-4 uppercase text-center md:text-left">
         Atualizar Estatísticas de Jogador
       </h2>
+
       {error && <p className="text-red-500">{error}</p>}
-      <div className="flex align-middle items-center justify-between w-full mb-10"></div>
+
+      {/* Passo 1: Selecionar Time */}
       <select
         value={nomeTime}
-        onChange={(e) => setNomeTime(e.target.value)}
+        onChange={(e) => {
+          setNomeTime(e.target.value);
+          setJogadorSelecionado(""); // reseta jogador ao mudar time
+          setJogoSelecionado(null); // reseta jogo ao mudar time
+        }}
         className="w-full p-2 rounded border border-gray-600 bg-gray-800 text-white mb-6"
       >
         <option value="">Selecione um time</option>
         {times.map((time) => (
-          <option key={time} value={time} className="text-gray-300">
+          <option key={time} value={time}>
             {time}
           </option>
         ))}
       </select>
-      {jogadores.length > 0 && (
+
+      {/* Passo 2: Selecionar Data do Jogo */}
+      {nomeTime && jogosDoTime.length > 0 && (
+        <>
+          <label className="text-gray-300">Selecione a data do jogo:</label>
+          <select
+            value={jogoSelecionado?.id || ""}
+            onChange={(e) => {
+              const jogo = jogosDoTime.find((j) => j.id === e.target.value);
+              setJogoSelecionado(jogo || null);
+            }}
+            className="w-full p-2 rounded border border-gray-600 bg-gray-800 text-white mb-6"
+          >
+            {jogosDoTime.map((jogo) => (
+              <option key={jogo.id} value={jogo.id}>
+                {new Date(jogo.data).toLocaleDateString("pt-BR")} -{" "}
+                {jogo.horario}
+              </option>
+            ))}
+          </select>
+        </>
+      )}
+
+      {/* Passo 3: Detalhes do jogo selecionado */}
+      {jogoSelecionado && (
+        <div className="bg-gray-700 p-4 rounded mb-6 text-white">
+          <p>
+            <strong>Jogo Selecionado:</strong>
+          </p>
+          <p>Time 1: {jogoSelecionado.time1}</p>
+          <p>Time 2: {jogoSelecionado.time2}</p>
+          <p>
+            Data: {new Date(jogoSelecionado.data).toLocaleDateString("pt-BR")}{" "}
+            às {jogoSelecionado.horario}
+          </p>
+        </div>
+      )}
+
+      {/* Passo 4: Selecionar Jogador */}
+      {jogoSelecionado && jogadores.length > 0 && (
         <select
           value={jogadorSelecionado}
           onChange={(e) => setJogadorSelecionado(e.target.value)}
@@ -250,49 +340,60 @@ const EditarJogador: React.FC = () => {
         >
           <option value="">Selecione um jogador</option>
           {jogadores.map((jogador) => (
-            <option
-              key={jogador.id}
-              value={jogador.id}
-              className="text-gray-300"
-            >
+            <option key={jogador.id} value={jogador.id}>
               {jogador.nome}
             </option>
           ))}
         </select>
       )}
-      {Object.keys(estatisticas).map((stat) => {
-        const statKey = stat as keyof typeof estatisticas; // 🔹 Converte para uma chave válida
 
-        return (
-          <div key={stat} className="mb-4 w-full">
-            <label className="block text-gray-300 capitalize">
-              {stat} (Atual: {estatisticas[statKey]})
-            </label>
-            <input
-              type="number"
-              placeholder="Adicionar valor"
-              value={novasEstatisticas[statKey] ?? ""} // 🔹 Evita `undefined`
-              onChange={(e) =>
-                setNovasEstatisticas((prev) => ({
-                  ...prev,
-                  [statKey]: Number(e.target.value), // 🔹 Mantém o tipo correto
-                }))
-              }
-              className="w-full p-2 rounded border border-gray-600 bg-gray-800 text-white"
-            />
-          </div>
-        );
-      })}
-      <button
-        onClick={async () => {
-          await atualizarEstatisticas(estatisticas); // Atualiza as estatísticas
-          fetchJogadores(); // Atualiza os dados do jogador após a atualização
-        }}
-        disabled={loading}
-        className="mt-6 w-full flex justify-center items-center px-5 h-12 bg-gray-500 text-blue font-semibold rounded-xl cursor-pointer hover:bg-blue hover:text-gray-900 transition-colors duration-300"
-      >
-        {loading ? "Carregando..." : "Atualizar Estatísticas"}
-      </button>
+      {/* Passo 5: Campos de Estatísticas */}
+      {jogoSelecionado && jogadorSelecionado && (
+        <>
+          {Object.keys(estatisticas).map((stat) => {
+            const statKey = stat as keyof typeof estatisticas;
+            return (
+              <div key={stat} className="mb-4 w-full">
+                <label className="block text-gray-300 capitalize">
+                  {stat} (Atual: {estatisticas[statKey]})
+                </label>
+                <input
+                  type="number"
+                  placeholder={`Valor a ${
+                    modoEdicao === "adicionar" ? "adicionar" : "remover"
+                  }`}
+                  value={novasEstatisticas[statKey] ?? ""}
+                  onChange={(e) =>
+                    setNovasEstatisticas((prev) => ({
+                      ...prev,
+                      [statKey]: Number(e.target.value),
+                    }))
+                  }
+                  className="w-full p-2 rounded border border-gray-600 bg-gray-800 text-white"
+                />
+              </div>
+            );
+          })}
+        </>
+      )}
+      {/* Passo 6: Botão para enviar as estatísticas */}
+      {jogoSelecionado && jogadorSelecionado && (
+        <div className="mt-6">
+          <button
+            onClick={atualizarEstatisticas}
+            className="w-full p-3 bg-blue text-white rounded hover:bg-blue"
+            disabled={loading} // Desabilita o botão enquanto está carregando
+          >
+            {loading ? "Atualizando..." : "Salvar Estatísticas"}
+          </button>
+        </div>
+      )}
+      {/* Caso nenhum jogo seja encontrado */}
+      {nomeTime && jogosDoTime.length === 0 && (
+        <p className="text-yellow-500">
+          Nenhum jogo encontrado para esse time.
+        </p>
+      )}
     </div>
   );
 };
