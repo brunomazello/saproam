@@ -46,14 +46,18 @@ const RegistrarResultado = () => {
     }
 
     const dataAtual = snap.data();
-    const vitorias = (dataAtual.vitorias || 0) + (dados.resultado === "vitoria" ? 1 : 0);
-    const derrotas = (dataAtual.derrotas || 0) + (dados.resultado === "derrota" ? 1 : 0);
-    const empates = (dataAtual.empates || 0) + (dados.resultado === "empate" ? 1 : 0);
+    const vitorias =
+      (dataAtual.vitorias || 0) + (dados.resultado === "vitoria" ? 1 : 0);
+    const derrotas =
+      (dataAtual.derrotas || 0) + (dados.resultado === "derrota" ? 1 : 0);
+    const empates =
+      (dataAtual.empates || 0) + (dados.resultado === "empate" ? 1 : 0);
     const jogosAtualizados = (dataAtual.jogos || 0) + 2;
     const pontos = vitorias * 3 + empates;
 
     const pontosFeitos = (dataAtual.pontosFeitos || 0) + dados.pontosFeitos;
-    const pontosRecebidos = (dataAtual.pontosRecebidos || 0) + dados.pontosRecebidos;
+    const pontosRecebidos =
+      (dataAtual.pontosRecebidos || 0) + dados.pontosRecebidos;
 
     await updateDoc(timeRef, {
       vitorias,
@@ -76,13 +80,22 @@ const RegistrarResultado = () => {
     const snapshot = await getDocs(jogadoresRef);
 
     snapshot.forEach(async (docJogador) => {
-      const jogadorRef = doc(db, "times_v2", nomeTime, "jogadores", docJogador.id);
+      const jogadorRef = doc(
+        db,
+        "times_v2",
+        nomeTime,
+        "jogadores",
+        docJogador.id
+      );
       const dataJogador = docJogador.data();
 
       const jogosAtualizados = (dataJogador.jogos || 0) + 2;
-      const vitorias = (dataJogador.vitorias || 0) + (resultado === "vitoria" ? 1 : 0);
-      const derrotas = (dataJogador.derrotas || 0) + (resultado === "derrota" ? 1 : 0);
-      const empates = (dataJogador.empates || 0) + (resultado === "empate" ? 1 : 0);
+      const vitorias =
+        (dataJogador.vitorias || 0) + (resultado === "vitoria" ? 1 : 0);
+      const derrotas =
+        (dataJogador.derrotas || 0) + (resultado === "derrota" ? 1 : 0);
+      const empates =
+        (dataJogador.empates || 0) + (resultado === "empate" ? 1 : 0);
       const feitos = (dataJogador.pontosFeitos || 0) + pontosFeitos;
       const recebidos = (dataJogador.pontosRecebidos || 0) + pontosRecebidos;
 
@@ -112,46 +125,80 @@ const RegistrarResultado = () => {
     const { time1, time2 } = jogo;
 
     // Soma total dos pontos
-    const totalTime1 = pontuacaoTime1Jogo1 + pontuacaoTime1Jogo2;
-    const totalTime2 = pontuacaoTime2Jogo1 + pontuacaoTime2Jogo2;
+    const totalTime1Jogo1 = pontuacaoTime1Jogo1;
+    const totalTime2Jogo1 = pontuacaoTime2Jogo1;
+    const totalTime1Jogo2 = pontuacaoTime1Jogo2;
+    const totalTime2Jogo2 = pontuacaoTime2Jogo2;
 
-    const isEmpate = totalTime1 === totalTime2;
-    const vencedor = totalTime1 > totalTime2 ? time1 : isEmpate ? null : time2;
-    const perdedor = vencedor === time1 ? time2 : time1;
+    const isEmpateJogo1 = totalTime1Jogo1 === totalTime2Jogo1;
+    const vencedorJogo1 =
+      totalTime1Jogo1 > totalTime2Jogo1 ? time1 : isEmpateJogo1 ? null : time2;
+    const perdedorJogo1 = vencedorJogo1 === time1 ? time2 : time1;
+
+    const isEmpateJogo2 = totalTime1Jogo2 === totalTime2Jogo2;
+    const vencedorJogo2 =
+      totalTime1Jogo2 > totalTime2Jogo2 ? time1 : isEmpateJogo2 ? null : time2;
+    const perdedorJogo2 = vencedorJogo2 === time1 ? time2 : time1;
 
     try {
       const jogoRef = doc(db, "calendario_v2", jogoSelecionado);
       await updateDoc(jogoRef, {
         placar: {
-          [time1]: totalTime1,
-          [time2]: totalTime2,
+          jogo1: {
+            [time1]: totalTime1Jogo1,
+            [time2]: totalTime2Jogo1,
+          },
+          jogo2: {
+            [time1]: totalTime1Jogo2,
+            [time2]: totalTime2Jogo2,
+          },
         },
       });
 
+      // Atualizando os times
       await atualizarTime(time1, {
-        pontosFeitos: totalTime1,
-        pontosRecebidos: totalTime2,
-        resultado: isEmpate ? "empate" : vencedor === time1 ? "vitoria" : "derrota",
+        pontosFeitos: totalTime1Jogo1 + totalTime1Jogo2,
+        pontosRecebidos: totalTime2Jogo1 + totalTime2Jogo2,
+        resultado:
+          isEmpateJogo1 && isEmpateJogo2
+            ? "empate"
+            : vencedorJogo1 === time1 || vencedorJogo2 === time1
+            ? "vitoria"
+            : "derrota",
       });
 
       await atualizarTime(time2, {
-        pontosFeitos: totalTime2,
-        pontosRecebidos: totalTime1,
-        resultado: isEmpate ? "empate" : vencedor === time2 ? "vitoria" : "derrota",
+        pontosFeitos: totalTime2Jogo1 + totalTime2Jogo2,
+        pontosRecebidos: totalTime1Jogo1 + totalTime1Jogo2,
+        resultado:
+          isEmpateJogo1 && isEmpateJogo2
+            ? "empate"
+            : vencedorJogo2 === time2 || vencedorJogo1 === time2
+            ? "vitoria"
+            : "derrota",
       });
 
+      // Atualizando os jogadores
       await atualizarJogadores(
         time1,
-        totalTime1,
-        totalTime2,
-        isEmpate ? "empate" : vencedor === time1 ? "vitoria" : "derrota"
+        totalTime1Jogo1 + totalTime1Jogo2,
+        totalTime2Jogo1 + totalTime2Jogo2,
+        isEmpateJogo1 && isEmpateJogo2
+          ? "empate"
+          : vencedorJogo1 === time1 || vencedorJogo2 === time1
+          ? "vitoria"
+          : "derrota"
       );
 
       await atualizarJogadores(
         time2,
-        totalTime2,
-        totalTime1,
-        isEmpate ? "empate" : vencedor === time2 ? "vitoria" : "derrota"
+        totalTime2Jogo1 + totalTime2Jogo2,
+        totalTime1Jogo1 + totalTime1Jogo2,
+        isEmpateJogo1 && isEmpateJogo2
+          ? "empate"
+          : vencedorJogo2 === time2 || vencedorJogo1 === time2
+          ? "vitoria"
+          : "derrota"
       );
 
       toast.success("✅ Resultado registrado com sucesso!");
@@ -164,70 +211,83 @@ const RegistrarResultado = () => {
   };
 
   return (
-    <div className="p-6 max-w-2xl mx-auto bg-gray-900 rounded-lg shadow-lg">
-      <ToastContainer />
-      <h2 className="text-2xl font-bold text-blue-400 mb-6 uppercase tracking-wider">
-        Registrar Resultado
-      </h2>
+    <div className="p-6 max-w-3xl mx-auto bg-gray-900 rounded-lg shadow-2xl">
+  <ToastContainer />
+  <h2 className="text-3xl font-semibold text-blue-400 mb-8 uppercase tracking-wider text-center">
+    Registrar Resultado
+  </h2>
 
-      <form onSubmit={handleSubmit} className="space-y-6">
-        <div>
-          <label className="block text-gray-200 mb-1">Selecione o jogo:</label>
-          <select
-            value={jogoSelecionado}
-            onChange={(e) => setJogoSelecionado(e.target.value)}
-            className="w-full p-3 rounded bg-gray-800 text-white"
-          >
-            <option value="">Escolha um jogo</option>
-            {jogos.map((jogo) => (
-              <option key={jogo.id} value={jogo.id}>
-                {jogo.time1} vs {jogo.time2} - {jogo.data}
-              </option>
-            ))}
-          </select>
-        </div>
-
-        <div className="grid grid-cols-2 gap-4">
-          <div>
-            <label className="block text-gray-200 mb-1">Jogo 1 - Time 1:</label>
-            <input
-              type="number"
-              onChange={(e) => setPontuacaoTime1Jogo1(Number(e.target.value))}
-              className="w-full p-3 rounded bg-gray-800 text-white"
-            />
-            <label className="block text-gray-200 mt-2 mb-1">Jogo 2 - Time 1:</label>
-            <input
-              type="number"
-              onChange={(e) => setPontuacaoTime1Jogo2(Number(e.target.value))}
-              className="w-full p-3 rounded bg-gray-800 text-white"
-            />
-          </div>
-
-          <div>
-            <label className="block text-gray-200 mb-1">Jogo 1 - Time 2:</label>
-            <input
-              type="number"
-              onChange={(e) => setPontuacaoTime2Jogo1(Number(e.target.value))}
-              className="w-full p-3 rounded bg-gray-800 text-white"
-            />
-            <label className="block text-gray-200 mt-2 mb-1">Jogo 2 - Time 2:</label>
-            <input
-              type="number"
-              onChange={(e) => setPontuacaoTime2Jogo2(Number(e.target.value))}
-              className="w-full p-3 rounded bg-gray-800 text-white"
-            />
-          </div>
-        </div>
-
-        <button
-          type="submit"
-          disabled={loading}
-          className="w-full py-3 px-4 bg-blue-500 hover:bg-blue-600 text-white font-semibold rounded transition duration-200"
-        >
-          {loading ? "Registrando..." : "Salvar Resultado"}
-        </button>
-      </form>
+  <form onSubmit={handleSubmit} className="space-y-8">
+    <div className="mb-6">
+      <label className="block text-gray-200 text-lg mb-2">
+        Selecione o jogo:
+      </label>
+      <select
+        value={jogoSelecionado}
+        onChange={(e) => setJogoSelecionado(e.target.value)}
+        className="w-full p-4 rounded-lg bg-gray-800 text-white text-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+      >
+        <option value="">Escolha um jogo</option>
+        {jogos.map((jogo) => (
+          <option key={jogo.id} value={jogo.id}>
+            {jogo.time1} vs {jogo.time2} - {jogo.data}
+          </option>
+        ))}
+      </select>
     </div>
+
+    {jogoSelecionado && (
+      <div className="grid grid-cols-2 gap-6">
+        <div>
+          <label className="block text-gray-200 text-lg mb-2">
+            Jogo 1 - {jogos.find((jogo) => jogo.id === jogoSelecionado)?.time1}:
+          </label>
+          <input
+            type="number"
+            onChange={(e) => setPontuacaoTime1Jogo1(Number(e.target.value))}
+            className="w-full p-4 rounded-lg bg-gray-800 text-white text-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+          />
+          <label className="block text-gray-200 text-lg mt-4 mb-2">
+            Jogo 2 - {jogos.find((jogo) => jogo.id === jogoSelecionado)?.time1}:
+          </label>
+          <input
+            type="number"
+            onChange={(e) => setPontuacaoTime1Jogo2(Number(e.target.value))}
+            className="w-full p-4 rounded-lg bg-gray-800 text-white text-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+          />
+        </div>
+
+        <div>
+          <label className="block text-gray-200 text-lg mb-2">
+            Jogo 1 - {jogos.find((jogo) => jogo.id === jogoSelecionado)?.time2}:
+          </label>
+          <input
+            type="number"
+            onChange={(e) => setPontuacaoTime2Jogo1(Number(e.target.value))}
+            className="w-full p-4 rounded-lg bg-gray-800 text-white text-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+          />
+          <label className="block text-gray-200 text-lg mt-4 mb-2">
+            Jogo 2 - {jogos.find((jogo) => jogo.id === jogoSelecionado)?.time2}:
+          </label>
+          <input
+            type="number"
+            onChange={(e) => setPontuacaoTime2Jogo2(Number(e.target.value))}
+            className="w-full p-4 rounded-lg bg-gray-800 text-white text-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+          />
+        </div>
+      </div>
+    )}
+
+    <button
+      type="submit"
+      disabled={loading}
+      className="w-full py-4 bg-blue-500 hover:bg-blue-600 text-white text-lg font-semibold rounded-lg transition duration-200"
+    >
+      {loading ? "Registrando..." : "Salvar Resultado"}
+    </button>
+  </form>
+</div>
+
   );
 };
 

@@ -138,7 +138,6 @@ export default function AdminPage() {
         {secaoAtiva === "jogo" && <AdicionarJogo />}
         {secaoAtiva === "time" && <EditarTime />}
         {secaoAtiva === "jogo" && <EditarJogo />}
-        {secaoAtiva === "jogo" && <SendJogosButton />}
         {secaoAtiva === "combine" && <CadastrarJogadorCombine/>}
         {secaoAtiva === "combine" && <EditarJogadorCombine/>}
         

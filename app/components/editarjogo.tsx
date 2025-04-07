@@ -1,6 +1,13 @@
 import { useState, useEffect } from "react";
 import { db } from "../../firebase";
-import { doc, getDoc, updateDoc } from "firebase/firestore";
+import {
+  doc,
+  getDoc,
+  updateDoc,
+  getDocs,
+  collection,
+  deleteDoc,
+} from "firebase/firestore";
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 
@@ -11,7 +18,7 @@ interface Jogo {
   horario: string;
   time1: string;
   time2: string;
-  twitchUser?: string; // <- novo campo
+  twitchUser?: string; // Se twitchUser não for obrigatório
 }
 
 const EditarJogo = () => {
@@ -23,53 +30,64 @@ const EditarJogo = () => {
 
   const fetchJogos = async () => {
     try {
-      const docRef = doc(db, "calendario", "jogos");
-      const docSnap = await getDoc(docRef);
+      const jogosRef = collection(db, "calendario_v2"); // Ref para a coleção de jogos
+      const querySnapshot = await getDocs(jogosRef);
 
-      if (docSnap.exists()) {
-        const partidas = docSnap.data().partidas || {};
-        const jogosList = Object.keys(partidas).map((key) => ({
-          id: key,
-          ...partidas[key],
-        }));
+      const jogosList: Jogo[] = [];
 
-        jogosList.sort(
-          (a, b) => new Date(a.data).getTime() - new Date(b.data).getTime()
-        );
-        setJogos(jogosList);
-      } else {
-        setError("Documento 'jogos' não encontrado!");
-      }
+      querySnapshot.forEach((doc) => {
+        // Para cada documento, adicione seus dados à lista
+        const jogo = doc.data();
+        jogosList.push({
+          id: doc.id, // ID dinâmico gerado pela função gerarIDPadrao
+          data: jogo.data,
+          horario: jogo.horario,
+          time1: jogo.time1,
+          time2: jogo.time2,
+          twitchUser: jogo.twitchUser || "",
+        });
+      });
+
+      // Ordenando a lista de jogos pela data
+      jogosList.sort(
+        (a, b) => new Date(a.data).getTime() - new Date(b.data).getTime()
+      );
+
+      setJogos(jogosList);
     } catch (error) {
+      console.error("Erro ao buscar jogos:", error);
       setError("Erro ao buscar jogos.");
     }
   };
 
   useEffect(() => {
     fetchJogos();
-  }, []);
+  }, []); // Esse useEffect chama a função uma vez, quando o componente é montado
 
   const handleSalvarEdicao = async () => {
     if (!jogoEmEdicao) return;
 
     try {
-      const docRef = doc(db, "calendario", "jogos");
+      // A referência do documento deve ser corretamente acessada usando o ID do jogo
+      const docRef = doc(db, "calendario_v2", jogoEmEdicao.id); // Usando o ID específico do jogo
       const docSnap = await getDoc(docRef);
-      const partidas = docSnap.exists() ? docSnap.data().partidas || {} : {};
 
-      partidas[jogoEmEdicao.id] = {
-        data: jogoEmEdicao.data,
-        horario: jogoEmEdicao.horario,
-        time1: jogoEmEdicao.time1,
-        time2: jogoEmEdicao.time2,
-        twitchUser: jogoEmEdicao.twitchUser || "",
-      };
+      if (docSnap.exists()) {
+        // Se o jogo existe no Firestore, atualizamos os campos
+        await updateDoc(docRef, {
+          data: jogoEmEdicao.data, // Atualiza a data
+          horario: jogoEmEdicao.horario, // Atualiza o horário
+          time1: jogoEmEdicao.time1, // Atualiza o time 1
+          time2: jogoEmEdicao.time2, // Atualiza o time 2
+          twitchUser: jogoEmEdicao.twitchUser || "", // Atualiza o usuário da Twitch (opcional)
+        });
 
-      await updateDoc(docRef, { partidas });
-
-      toast.success("Jogo atualizado com sucesso!");
-      setJogoEmEdicao(null);
-      fetchJogos();
+        toast.success("Jogo atualizado com sucesso!");
+        setJogoEmEdicao(null);
+        fetchJogos(); // Atualiza a lista completa de jogos
+      } else {
+        setError("Jogo não encontrado para edição!");
+      }
     } catch (error) {
       console.error("Erro ao atualizar jogo:", error);
       toast.error("Erro ao atualizar jogo.");
@@ -79,61 +97,22 @@ const EditarJogo = () => {
   const handleDeletar = async (id: string) => {
     setLoading(true);
     try {
-      const docRef = doc(db, "calendario", "jogos");
+      const docRef = doc(db, "calendario_v2", id); // Alteração aqui para usar o ID do jogo, que é dinâmico
       const docSnap = await getDoc(docRef);
 
       if (docSnap.exists()) {
-        const partidas = docSnap.data().partidas || {};
+        await deleteDoc(docRef); // Deleta o documento com o ID especificado
 
-        if (partidas[id]) {
-          delete partidas[id];
-          await updateDoc(docRef, { partidas: { ...partidas } });
-
-          toast.success("Jogo deletado com sucesso!");
-          fetchJogos(); // Atualiza a lista completa
-        } else {
-          setError("Jogo não encontrado para remoção!");
-        }
+        toast.success("Jogo deletado com sucesso!");
+        fetchJogos(); // Atualiza a lista completa
       } else {
-        setError("Documento 'jogos' não encontrado para remoção!");
+        setError("Jogo não encontrado para remoção!");
       }
     } catch (error) {
       console.error("Erro ao deletar jogo:", error);
       toast.error("Erro ao deletar jogo.");
     } finally {
       setLoading(false);
-    }
-  };
-
-  const handleAdicionarJogoFirestore = async (novoJogo: Jogo) => {
-    try {
-      const docRef = doc(db, "calendario", "jogos");
-      const docSnap = await getDoc(docRef);
-      const partidas = docSnap.exists() ? docSnap.data().partidas || {} : {};
-
-      // Cria um novo ID único (pode usar timestamp ou UUID)
-      const novoId = `jogo_${Date.now()}`;
-
-      const partidasAtualizadas = {
-        ...partidas,
-        [novoId]: {
-          data: novoJogo.data,
-          horario: novoJogo.horario,
-          time1: novoJogo.time1,
-          time2: novoJogo.time2,
-        },
-      };
-
-      // Atualiza no Firestore
-      await updateDoc(docRef, { partidas: partidasAtualizadas });
-
-      toast.success("Jogo adicionado com sucesso!");
-
-      // Atualiza a lista após adicionar
-      fetchJogos();
-    } catch (error) {
-      console.error("Erro ao adicionar jogo:", error);
-      toast.error("Erro ao adicionar jogo.");
     }
   };
 
