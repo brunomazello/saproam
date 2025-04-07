@@ -10,6 +10,7 @@ interface Jogo {
   horario: string;
   time1: string;
   time2: string;
+  twitchUser: string;
 }
 
 type JogadorInfo = {
@@ -110,6 +111,7 @@ const ContagemRegressiva = () => {
               horario: jogo.horario,
               time1: jogo.time1,
               time2: jogo.time2,
+              twitchUser: jogo.twitchUser,
             });
           }
 
@@ -237,7 +239,7 @@ const ContagemRegressiva = () => {
                   >
                     {temposRestantes[index] === "🔥 LIVE 🔴" ? (
                       <a
-                        href="https://www.twitch.tv/verusexp"
+                      href={`https://www.twitch.tv/${jogo.twitchUser}`}
                         target="_blank"
                         rel="noopener noreferrer"
                         className="text-danger animate-pulse hover:text-blue-500 font-bold cursor-pointer"

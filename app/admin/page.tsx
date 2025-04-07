@@ -76,7 +76,7 @@ export default function AdminPage() {
             onClick={() => setSecaoAtiva("jogo")}
             className="w-full px-4 py-2 rounded-md text-gray-300 transition hover:cursor-pointer hover:bg-gray-100 hover:text-black bg-gray-800"
           >
-            Edição de Jogos
+            Edição de Calendario
           </button>
           <button
             onClick={() => setSecaoAtiva("combine")}
@@ -119,7 +119,7 @@ export default function AdminPage() {
               onClick={() => setSecaoAtiva("jogo")}
               className="w-full px-10 py-5 md:py-2 rounded-md text-gray-300 transition hover:cursor-pointer hover:bg-gray-100 hover:text-black bg-gray-800 mb-10 md:mb-0"
             >
-              Edição de Jogos
+              Edição de Calendario
             </button>
             <button
               onClick={() => setSecaoAtiva("combine")}
