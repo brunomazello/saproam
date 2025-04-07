@@ -14,10 +14,15 @@ interface Jogo {
   horario: string;
   time1: string;
   time2: string;
-  placarTime1?: number; // Adicionado para o placar do time 1
-  placarTime2?: number; // Adicionado para o placar do time 2
+  placarTime1: number | null;
+  placarTime2: number | null;
+  placarJogo1Time1: number | null;
+  placarJogo1Time2: number | null;
+  placarJogo2Time1: number | null;
+  placarJogo2Time2: number | null;
   encerrado: boolean;
   jogoID: string;
+  vencedor: string;
 }
 
 interface JogadoresTime {
@@ -218,16 +223,23 @@ const Calendario = () => {
             const jogo2 = placar.jogo2 || {}; // Acessa o jogo2 dentro do placar
 
             // Pega os valores de placar para cada time
-            const placarTime1 = jogo1[time1] || null; // Coloca null se não houver placar
-            const placarTime2 = jogo2[time2] || null; // Coloca null se não houver placar
+            const placarJogo1Time1 = jogo1[time1] ?? null;
+            const placarJogo1Time2 = jogo1[time2] ?? null;
+            const placarJogo2Time1 = jogo2[time1] ?? null;
+            const placarJogo2Time2 = jogo2[time2] ?? null;
 
-            // Log para verificar os valores de placar
-            console.log(`Jogo ${time1} vs ${time2}`);
-            console.log(`Placar ${time1}:`, placarTime1);
-            console.log(`Placar ${time2}:`, placarTime2);
+            // Verifica se o jogo foi encerrado (pelo menos o primeiro jogo completo)
+            const jogoEncerrado =
+              placarJogo1Time1 !== null &&
+              placarJogo1Time2 !== null &&
+              placarJogo2Time1 !== null &&
+              placarJogo2Time2 !== null;
 
+            // Obtem o resultado final
+            const total = jogo.total || {};
+            const vencedor = jogo.placar?.vencedor || null;
+            console.log("Vencedor:", vencedor);
             // Verificar se ambos os placares estão presentes e são números
-            const jogoEncerrado = placarTime1 !== null && placarTime2 !== null;
             console.log(`Jogo ${time1} vs ${time2} encerrado:`, jogoEncerrado);
 
             jogosList.push({
@@ -235,10 +247,15 @@ const Calendario = () => {
               horario: jogo.horario,
               time1: time1,
               time2: time2,
-              placarTime1: placarTime1,
-              placarTime2: placarTime2,
-              encerrado: jogoEncerrado, // Marcado como encerrado se os placares forem válidos
+              placarTime1: placarJogo1Time1, // se quiser manter compatível
+              placarTime2: placarJogo1Time2,
+              placarJogo1Time1,
+              placarJogo1Time2,
+              placarJogo2Time1,
+              placarJogo2Time2,
+              encerrado: jogoEncerrado,
               jogoID: jogoID,
+              vencedor: vencedor,
             });
           });
 
@@ -327,7 +344,7 @@ const Calendario = () => {
                             {formatarNomeTime(jogo.time1)}
                           </span>
                           <span className="text-5xl font-bold">
-                            {jogo.placarTime1}
+                            {jogo.placarJogo1Time1}
                           </span>
                         </div>
 
@@ -340,17 +357,40 @@ const Calendario = () => {
                             {formatarNomeTime(jogo.time2)}
                           </span>
                           <span className="text-5xl font-bold">
-                            {jogo.placarTime2}
+                            {jogo.placarJogo1Time2}
                           </span>
                         </div>
                       </div>
                       {jogo.encerrado && (
                         <div className="mt-4 text-center text-gray-200 font-semibold text-sm md:text-base">
-                          <span className="inline-block py-1 px-3 bg-gray-900/80 rounded-lg text-xs md:text-sm">
-                            Jogo Encerrado
+                          <span className="inline-block py-1 px-3 bg-gray-900/80 rounded-lg text-lg md:text-3xl">
+                            {jogo.vencedor?.toUpperCase()}
                           </span>
                         </div>
                       )}
+                      <div className="flex flex-col md:flex-row justify-between items-center text-white mt-6">
+                        <div className="flex flex-col items-center space-y-2">
+                          <span className="text-base font-semibold">
+                            {formatarNomeTime(jogo.time1)}
+                          </span>
+                          <span className="text-5xl font-bold">
+                            {jogo.placarJogo2Time1}
+                          </span>
+                        </div>
+
+                        <span className="text-4xl font-bold opacity-80 my-2 md:my-0">
+                          vs
+                        </span>
+
+                        <div className="flex flex-col items-center space-y-2">
+                          <span className="text-base font-semibold">
+                            {formatarNomeTime(jogo.time2)}
+                          </span>
+                          <span className="text-5xl font-bold">
+                            {jogo.placarJogo2Time2}
+                          </span>
+                        </div>
+                      </div>
 
                       <div className="mt-4 text-center text-gray-300 text-sm md:text-base flex justify-center items-center">
                         <span className="inline-block py-2 px-4 text-sm font-semibold hover:text-gray-700 text-gray-100 cursor-pointer hover:bg-gray-200 rounded-lg">

@@ -146,36 +146,73 @@ const RegistrarResultado = () => {
     });
   };
 
+  useEffect(() => {
+    const carregarPontuacoes = async () => {
+      if (!jogoSelecionado) return;
+  
+      const jogo = jogos.find((j) => j.id === jogoSelecionado);
+      if (!jogo) return;
+  
+      const jogoRef = doc(db, "calendario_v2", jogoSelecionado);
+      const docSnap = await getDoc(jogoRef);
+  
+      if (docSnap.exists()) {
+        const data = docSnap.data();
+  
+        if (data.placar && data.placar.jogo1 && data.placar.jogo2) {
+          const { jogo1, jogo2 } = data.placar;
+  
+          setPontuacaoTime1Jogo1(jogo1?.[jogo.time1] ?? 0);
+          setPontuacaoTime2Jogo1(jogo1?.[jogo.time2] ?? 0);
+          setPontuacaoTime1Jogo2(jogo2?.[jogo.time1] ?? 0);
+          setPontuacaoTime2Jogo2(jogo2?.[jogo.time2] ?? 0);
+        } else {
+          setPontuacaoTime1Jogo1(0);
+          setPontuacaoTime2Jogo1(0);
+          setPontuacaoTime1Jogo2(0);
+          setPontuacaoTime2Jogo2(0);
+        }
+      }
+    };
+  
+    carregarPontuacoes();
+  }, [jogoSelecionado]); // <- Só isso!
+  
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!jogoSelecionado) return;
     setLoading(true);
-  
+
     const jogo = jogos.find((j) => j.id === jogoSelecionado);
     if (!jogo) {
       toast.error("Jogo não encontrado.");
       setLoading(false);
       return;
     }
-  
+
     const { time1, time2, horario } = jogo;
-  
+
     const totalTime1Jogo1 = pontuacaoTime1Jogo1;
     const totalTime2Jogo1 = pontuacaoTime2Jogo1;
     const totalTime1Jogo2 = pontuacaoTime1Jogo2;
     const totalTime2Jogo2 = pontuacaoTime2Jogo2;
-  
+
     const placarTime1 = totalTime1Jogo1 + totalTime1Jogo2;
     const placarTime2 = totalTime2Jogo1 + totalTime2Jogo2;
-  
+
     console.log("🟡 Enviando resultado...");
     console.log("📊 Pontuações:");
-    console.log(`Jogo 1 - ${time1}: ${totalTime1Jogo1}, ${time2}: ${totalTime2Jogo1}`);
-    console.log(`Jogo 2 - ${time1}: ${totalTime1Jogo2}, ${time2}: ${totalTime2Jogo2}`);
-  
+    console.log(
+      `Jogo 1 - ${time1}: ${totalTime1Jogo1}, ${time2}: ${totalTime2Jogo1}`
+    );
+    console.log(
+      `Jogo 2 - ${time1}: ${totalTime1Jogo2}, ${time2}: ${totalTime2Jogo2}`
+    );
+
     let vitoriasTime1 = 0;
     let vitoriasTime2 = 0;
-  
+
     if (totalTime1Jogo1 > totalTime2Jogo1) {
       vitoriasTime1++;
       console.log(`✅ ${time1} venceu o Jogo 1`);
@@ -185,7 +222,7 @@ const RegistrarResultado = () => {
     } else {
       console.log("⚖️ Jogo 1 empatado");
     }
-  
+
     if (totalTime1Jogo2 > totalTime2Jogo2) {
       vitoriasTime1++;
       console.log(`✅ ${time1} venceu o Jogo 2`);
@@ -195,24 +232,28 @@ const RegistrarResultado = () => {
     } else {
       console.log("⚖️ Jogo 2 empatado");
     }
-  
+
     let resultadoTime1: "vitoria" | "derrota" | "empate";
     let resultadoTime2: "vitoria" | "derrota" | "empate";
-  
+
     if (vitoriasTime1 > vitoriasTime2) {
       resultadoTime1 = "vitoria";
       resultadoTime2 = "derrota";
-      console.log(`🏆 ${time1} venceu no total (${vitoriasTime1} x ${vitoriasTime2})`);
+      console.log(
+        `🏆 ${time1} venceu no total (${vitoriasTime1} x ${vitoriasTime2})`
+      );
     } else if (vitoriasTime1 < vitoriasTime2) {
       resultadoTime1 = "derrota";
       resultadoTime2 = "vitoria";
-      console.log(`🏆 ${time2} venceu no total (${vitoriasTime2} x ${vitoriasTime1})`);
+      console.log(
+        `🏆 ${time2} venceu no total (${vitoriasTime2} x ${vitoriasTime1})`
+      );
     } else {
       resultadoTime1 = "empate";
       resultadoTime2 = "empate";
       console.log(`🤝 Empate no total (${vitoriasTime1} x ${vitoriasTime2})`);
     }
-  
+
     try {
       const jogoRef = doc(db, "calendario_v2", jogoSelecionado);
       await updateDoc(jogoRef, {
@@ -233,21 +274,27 @@ const RegistrarResultado = () => {
             [time1]: resultadoTime1,
             [time2]: resultadoTime2,
           },
+          vencedor:
+            resultadoTime1 === "vitoria"
+              ? time1
+              : resultadoTime2 === "vitoria"
+              ? time2
+              : "empate",
         },
       });
-  
+
       await atualizarTime(time1, {
         pontosFeitos: placarTime1,
         pontosRecebidos: placarTime2,
         resultado: resultadoTime1,
       });
-  
+
       await atualizarTime(time2, {
         pontosFeitos: placarTime2,
         pontosRecebidos: placarTime1,
         resultado: resultadoTime2,
       });
-  
+
       await atualizarJogadores(
         time1,
         placarTime1,
@@ -258,7 +305,7 @@ const RegistrarResultado = () => {
         new Date(),
         horario
       );
-  
+
       await atualizarJogadores(
         time2,
         placarTime2,
@@ -269,7 +316,7 @@ const RegistrarResultado = () => {
         new Date(),
         horario
       );
-  
+
       toast.success("✅ Resultado registrado com sucesso!");
     } catch (err) {
       toast.error("❌ Erro ao registrar resultado.");
@@ -278,9 +325,6 @@ const RegistrarResultado = () => {
       setLoading(false);
     }
   };
-  
-  
-  
 
   return (
     <div className="p-6 max-w-3xl mx-auto bg-gray-900 rounded-xl shadow-2xl">
@@ -317,6 +361,7 @@ const RegistrarResultado = () => {
               </label>
               <input
                 type="number"
+                value={pontuacaoTime1Jogo1}
                 onChange={(e) => setPontuacaoTime1Jogo1(Number(e.target.value))}
                 className="w-full p-4 rounded-xl bg-gray-800 text-white text-lg focus:outline-none focus:ring-4 focus:ring-blue-500 transition-all duration-300 hover:ring-2"
               />
@@ -326,6 +371,7 @@ const RegistrarResultado = () => {
               </label>
               <input
                 type="number"
+                value={pontuacaoTime1Jogo2}
                 onChange={(e) => setPontuacaoTime1Jogo2(Number(e.target.value))}
                 className="w-full p-4 rounded-xl bg-gray-800 text-white text-lg focus:outline-none focus:ring-4 focus:ring-blue-500 transition-all duration-300 hover:ring-2"
               />
@@ -337,6 +383,7 @@ const RegistrarResultado = () => {
                 Jogo 1:
               </label>
               <input
+                value={pontuacaoTime2Jogo1}
                 type="number"
                 onChange={(e) => setPontuacaoTime2Jogo1(Number(e.target.value))}
                 className="w-full p-4 rounded-xl bg-gray-800 text-white text-lg focus:outline-none focus:ring-4 focus:ring-blue-500 transition-all duration-300 hover:ring-2"
@@ -346,6 +393,7 @@ const RegistrarResultado = () => {
                 Jogo 2:
               </label>
               <input
+                value={pontuacaoTime2Jogo2}
                 type="number"
                 onChange={(e) => setPontuacaoTime2Jogo2(Number(e.target.value))}
                 className="w-full p-4 rounded-xl bg-gray-800 text-white text-lg focus:outline-none focus:ring-4 focus:ring-blue-500 transition-all duration-300 hover:ring-2"
