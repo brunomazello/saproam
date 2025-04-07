@@ -6,6 +6,7 @@ interface ButtonProps extends ComponentProps<"button"> {}
 
 interface LinkButtonProps extends ButtonProps {
   href: string;
+  children: ReactNode;  // Tipo correto para o conteúdo do botão
 }
 
 export function Button(props: ButtonProps) {
@@ -23,7 +24,7 @@ export function LinkButton({ href, children, ...props }: LinkButtonProps) {
       onClick={() => window.open(href, "_blank")}
       {...props}
     >
-      {children}
+      {children} {/* Aqui passa o conteúdo como children */}
     </Button>
   );
 }

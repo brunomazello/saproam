@@ -1,6 +1,12 @@
 import { useEffect, useState } from "react";
 import { db } from "../../firebase";
-import { doc, getDoc, getDocs, collection } from "firebase/firestore";
+import {
+  doc,
+  getDoc,
+  getDocs,
+  collection,
+  onSnapshot,
+} from "firebase/firestore";
 import { Button } from "./button";
 
 interface Jogo {
@@ -8,6 +14,10 @@ interface Jogo {
   horario: string;
   time1: string;
   time2: string;
+  placarTime1?: number; // Adicionado para o placar do time 1
+  placarTime2?: number; // Adicionado para o placar do time 2
+  encerrado: boolean;
+  jogoID: string;
 }
 
 interface JogadoresTime {
@@ -20,9 +30,8 @@ type JogadorInfo = {
 };
 
 type JogadorComTime = JogadorInfo & {
-  time: string;  // Adiciona o time ao tipo
+  time: string; // Adiciona o time ao tipo
 };
-
 
 type JogadoresPorJogo = {
   [index: number]: {
@@ -107,37 +116,37 @@ const Calendario = () => {
       console.log(`Buscando jogo com ID: ${jogoID}`); // Log para verificar o ID gerado
       const docRef = doc(db, "calendario_v2", jogoID);
       const docSnap = await getDoc(docRef);
-  
+
       if (docSnap.exists()) {
         console.log(`Jogo ${jogoID} encontrado!`); // Confirma que o jogo foi encontrado
         const jogoData = docSnap.data();
-        const jogadores: JogadorComTime[] = [];  // Alterado para JogadorComTime
-  
-        const jogadoresTime1 = jogoData.jogadores?.[time1] || {};
-        const jogadoresTime2 = jogoData.jogadores?.[time2] || {};
-  
+        const jogadores: JogadorComTime[] = []; // Alterado para JogadorComTime
+
+        const jogadoresTime1 = jogoData.jogadores?.[time1] || {}; // Acessando o time 1
+        const jogadoresTime2 = jogoData.jogadores?.[time2] || {}; // Acessando o time 2
+
         // Adicionando jogadores ao time1
         for (const key in jogadoresTime1) {
           if (jogadoresTime1.hasOwnProperty(key)) {
             jogadores.push({
               nome: jogadoresTime1[key].nome,
               posicao: jogadoresTime1[key].posicao || "Desconhecida",
-              time: time1,  // Aqui adiciona o time
+              time: time1, // Aqui adiciona o time
             });
           }
         }
-  
+
         // Adicionando jogadores ao time2
         for (const key in jogadoresTime2) {
           if (jogadoresTime2.hasOwnProperty(key)) {
             jogadores.push({
               nome: jogadoresTime2[key].nome,
               posicao: jogadoresTime2[key].posicao || "Desconhecida",
-              time: time2,  // Aqui adiciona o time
+              time: time2, // Aqui adiciona o time
             });
           }
         }
-  
+
         return jogadores;
       } else {
         console.warn(`Jogo "${jogoID}" não encontrado.`);
@@ -148,7 +157,6 @@ const Calendario = () => {
       return [];
     }
   };
-  
 
   const toggleExpandir = async (
     index: number,
@@ -165,17 +173,17 @@ const Calendario = () => {
       }
       return newSet;
     });
-  
+
     if (!jogadoresPorJogo[index]) {
       const jogadores = await buscarJogadores(time1, time2, data);
-  
+
       const jogadoresTime1 = jogadores.filter(
         (jogador) => jogador.time === time1
       );
       const jogadoresTime2 = jogadores.filter(
         (jogador) => jogador.time === time2
       );
-  
+
       setJogadoresPorJogo((prev) => ({
         ...prev,
         [index]: {
@@ -187,21 +195,50 @@ const Calendario = () => {
   };
 
   useEffect(() => {
-    const fetchJogos = async () => {
-      try {
-        const colRef = collection(db, "calendario_v2"); // Acesso à coleção de jogos
-        const snapshot = await getDocs(colRef);
+    const fetchJogos = () => {
+      const colRef = collection(db, "calendario_v2");
 
-        if (!snapshot.empty) {
+      // Escuta as mudanças em tempo real
+      const unsubscribe = onSnapshot(
+        colRef,
+        (snapshot) => {
           const jogosList: Jogo[] = [];
 
           snapshot.forEach((doc) => {
             const jogo = doc.data();
+            const jogoID = doc.id;
+
+            // Obtém os nomes dos times dinamicamente
+            const time1 = jogo.time1;
+            const time2 = jogo.time2;
+
+            // Acessa o placar corretamente dentro do mapa de jogos
+            const placar = jogo.placar || {}; // Garante que o placar é um objeto
+            const jogo1 = placar.jogo1 || {}; // Acessa o jogo1 dentro do placar
+            const jogo2 = placar.jogo2 || {}; // Acessa o jogo2 dentro do placar
+
+            // Pega os valores de placar para cada time
+            const placarTime1 = jogo1[time1] || null; // Coloca null se não houver placar
+            const placarTime2 = jogo2[time2] || null; // Coloca null se não houver placar
+
+            // Log para verificar os valores de placar
+            console.log(`Jogo ${time1} vs ${time2}`);
+            console.log(`Placar ${time1}:`, placarTime1);
+            console.log(`Placar ${time2}:`, placarTime2);
+
+            // Verificar se ambos os placares estão presentes e são números
+            const jogoEncerrado = placarTime1 !== null && placarTime2 !== null;
+            console.log(`Jogo ${time1} vs ${time2} encerrado:`, jogoEncerrado);
+
             jogosList.push({
               data: jogo.data,
               horario: jogo.horario,
-              time1: jogo.time1,
-              time2: jogo.time2,
+              time1: time1,
+              time2: time2,
+              placarTime1: placarTime1,
+              placarTime2: placarTime2,
+              encerrado: jogoEncerrado, // Marcado como encerrado se os placares forem válidos
+              jogoID: jogoID,
             });
           });
 
@@ -212,12 +249,13 @@ const Calendario = () => {
           });
 
           setJogosDoMes(jogosList);
-        } else {
-          console.log("Nenhum jogo encontrado!");
+        },
+        (error) => {
+          console.error("Erro ao escutar mudanças:", error);
         }
-      } catch (error) {
-        console.error("Erro ao carregar jogos:", error);
-      }
+      );
+
+      return () => unsubscribe();
     };
 
     fetchJogos();
@@ -255,21 +293,31 @@ const Calendario = () => {
       <div className="space-y-4">
         {jogosDoMes.slice(0, exibirJogos).map((jogo, index) => {
           const isExpanded = jogosExpandidos.has(index);
+
+          // Verificar se o jogo está encerrado com base na data e horário
+          const jogoEncerrado = (data: string, horario: string): boolean => {
+            const dataAtual = new Date();
+            const dataJogo = new Date(`${data}T${horario}`);
+            return dataJogo < dataAtual;
+          };
+
+          const isGameEnded = jogoEncerrado(jogo.data, jogo.horario); // Chama a função corretamente
+
           return (
             <div
-              key={index}
+              key={jogo.jogoID}
               onClick={() =>
                 toggleExpandir(index, jogo.time1, jogo.time2, jogo.data)
               }
               className={`flex flex-col md:flex-row md:justify-between md:items-center border p-3 rounded-lg shadow-md cursor-pointer transition-colors duration-200 ${
-                jogoEncerrado(jogo.data, jogo.horario)
-                  ? "bg-gray-700]/50 opacity-60"
+                isGameEnded
+                  ? "bg-gray-700/50 opacity-60"
                   : "bg-gray-700 hover:bg-gray-600"
               }`}
             >
               <div className="flex flex-col w-full">
                 <span className="font-semibold text-gray-200 flex flex-col md:flex-row md:items-center md:gap-6 md:text-left text-center">
-                  {jogoEncerrado(jogo.data, jogo.horario) && (
+                  {isGameEnded && (
                     <span className="mt-2 mb-1 md:mt-0 md:mb-0 bg-red-600 text-white text-xs font-semibold px-2 py-1 rounded w-fit mx-auto md:mx-0">
                       ENCERRADO
                     </span>
@@ -280,13 +328,70 @@ const Calendario = () => {
                   </span>
 
                   <span className="text-lg md:text-xl">
-                    {jogo.time1} 🆚 {jogo.time2}
+                    {formatarNomeTime(jogo.time1)} 🆚{" "}
+                    {formatarNomeTime(jogo.time2)}
                   </span>
 
-                  <span className="text-sm textgray-300 md:text-base md:ml-auto">
+                  <span className="text-sm text-gray-300 md:text-base md:ml-auto">
                     🕒 {jogo.horario}
                   </span>
                 </span>
+
+                {isGameEnded && (
+                  <div className="mt-4">
+                    <div className="bg-gray-800 p-6 rounded-xl shadow-md transition-all duration-300 cursor-pointer">
+                      <div className="flex flex-col md:flex-row justify-between items-center text-white">
+                        <div className="flex flex-col items-center space-y-2">
+                          <span className="text-base font-semibold">
+                            {formatarNomeTime(jogo.time1)}
+                          </span>
+                          <span className="text-5xl font-bold">
+                            {jogo.placarTime1}
+                          </span>
+                        </div>
+
+                        <span className="text-4xl font-bold opacity-80 my-2 md:my-0">
+                          vs
+                        </span>
+
+                        <div className="flex flex-col items-center space-y-2">
+                          <span className="text-base font-semibold">
+                            {formatarNomeTime(jogo.time2)}
+                          </span>
+                          <span className="text-5xl font-bold">
+                            {jogo.placarTime2}
+                          </span>
+                        </div>
+                      </div>
+
+                      <div className="mt-4 text-center text-gray-200 font-semibold text-sm md:text-base">
+                        <span className="inline-block py-1 px-3 bg-gray-900/80 rounded-lg text-xs md:text-sm">
+                          Jogo Encerrado
+                        </span>
+                      </div>
+
+                      <div className="mt-4 text-center text-gray-300 text-sm md:text-base flex justify-center items-center">
+                        <span className="inline-block py-2 px-4 text-sm font-semibold hover:text-gray-700 text-gray-100 cursor-pointer hover:bg-gray-200 rounded-lg">
+                          <span>Expandir Line-up</span>
+                          <svg
+                            xmlns="http://www.w3.org/2000/svg"
+                            className="h-5 w-5 ml-2 inline"
+                            fill="none"
+                            viewBox="0 0 24 24"
+                            stroke="currentColor"
+                          >
+                            <path
+                              strokeLinecap="round"
+                              strokeLinejoin="round"
+                              strokeWidth="2"
+                              d="M19 9l-7 7-7-7"
+                            />
+                          </svg>
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+                )}
 
                 {isExpanded && (
                   <div className="mt-4 bg-gray-800 p-4 rounded-md text-white text-sm md:text-base transition-all duration-300">
@@ -309,7 +414,7 @@ const Calendario = () => {
                               <span className="font-medium">
                                 {jogador.nome}
                               </span>
-                              <span className="ml-auto text-[--color-gray-300] text-xs font-mono">
+                              <span className="ml-auto text-gray-300 text-xs font-mono">
                                 {abreviarPosicao(jogador.posicao)}
                               </span>
                             </li>
@@ -361,7 +466,7 @@ const Calendario = () => {
           </div>
         )}
 
-        <div className="text-center flex justify-center">
+        <div className="text-center flex justify-center mt-6">
           <Button onClick={() => (window.location.href = "/")}>Voltar</Button>
         </div>
       </div>
