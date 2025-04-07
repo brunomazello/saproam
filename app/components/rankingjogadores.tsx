@@ -50,64 +50,61 @@ const RankingJogadores: React.FC = () => {
   useEffect(() => {
     const fetchJogadores = async () => {
       try {
-        const querySnapshot = await getDocs(collection(db, "times"));
+        const timesSnapshot = await getDocs(collection(db, "times_v2"));
         const jogadoresList: Jogador[] = [];
 
-        if (querySnapshot.empty) return;
+        if (timesSnapshot.empty) return;
 
-        for (const docSnap of querySnapshot.docs) {
-          const data = docSnap.data();
-          const jogadoresData = data.Jogadores;
+        for (const timeDoc of timesSnapshot.docs) {
+          const timeId = timeDoc.id;
+          const jogadoresSnapshot = await getDocs(
+            collection(db, "times_v2", timeId, "jogadores")
+          );
 
-          for (let i = 1; i <= 5; i++) {
-            const jogadorKey = `Jogador${i}`;
-            const jogadorData = jogadoresData[jogadorKey];
+          for (const jogadorDoc of jogadoresSnapshot.docs) {
+            const jogadorData = jogadorDoc.data();
+            const jogos = jogadorData.jogos || 1;
 
-            if (jogadorData) {
-              const jogos = jogadorData.Jogos || 1; // Evitar divisão por zero
+            const fga = jogadorData.fga || 0;
+            const fgm = jogadorData.fgm || 0;
+            const tpa = jogadorData.tpa || 0;
+            const tpm = jogadorData.tpm || 0;
+            const fta = jogadorData.fta || 0;
+            const ftm = jogadorData.ftm || 0;
 
-              const fga = jogadorData.fga || 0;
-              const fgm = jogadorData.fgm || 0;
-              const tpa = jogadorData.tpa || 0;
-              const tpm = jogadorData.tpm || 0;
-              const fta = jogadorData.fta || 0;
-              const ftm = jogadorData.ftm || 0;
+            jogadoresList.push({
+              nome: jogadorData.nome || "Desconhecido",
+              posicao: jogadorData.posicao || "Desconhecida",
+              pontuacao: jogadorData.pontuacao || 0,
+              assistencias: jogadorData.assistencias || 0,
+              rebotes: jogadorData.rebotes || 0,
+              erros: jogadorData.erros || 0,
+              faltas: jogadorData.faltas || 0,
+              roubos: jogadorData.roubos || 0,
+              jogos: jogos,
 
-              jogadoresList.push({
-                nome: jogadorData.Nome,
-                posicao: jogadorData.Posição,
-                pontuacao: jogadorData.pontuacao || 0,
-                assistencias: jogadorData.assistencias || 0,
-                rebotes: jogadorData.rebotes || 0,
-                erros: jogadorData.erros || 0,
-                faltas: jogadorData.faltas || 0,
-                roubos: jogadorData.roubos || 0,
-                jogos: jogos,
-                
+              // Médias por jogo
+              ppg: Number(((jogadorData.pontuacao || 0) / jogos).toFixed(1)),
+              apg: Number(((jogadorData.assistencias || 0) / jogos).toFixed(1)),
+              rpg: Number(((jogadorData.rebotes || 0) / jogos).toFixed(1)),
+              spg: Number(((jogadorData.roubos || 0) / jogos).toFixed(1)),
+              tpg: Number(((jogadorData.erros || 0) / jogos).toFixed(1)),
+              fpg: Number(((jogadorData.faltas || 0) / jogos).toFixed(1)),
+              tppg: Number(((jogadorData.tpm || 0) / jogos).toFixed(1)),
 
-                // Médias por jogo
-                ppg: (jogadorData.pontuacao || 0) / jogos,
-                apg: (jogadorData.assistencias || 0) / jogos,
-                rpg: (jogadorData.rebotes || 0) / jogos,
-                spg: (jogadorData.roubos || 0) / jogos,
-                tpg: (jogadorData.erros || 0) / jogos,
-                fpg: (jogadorData.faltas || 0) / jogos,
-                tppg: (jogadorData.tpm || 0) / jogos,
+              // Arremessos
+              fgm: fgm,
+              fga: fga,
+              tpm: tpm,
+              tpa: tpa,
+              ftm: ftm,
+              fta: fta,
 
-                // Arremessos
-                fgm: fgm,
-                fga: fga,
-                tpm: tpm,
-                tpa: tpa,
-                ftm: ftm,
-                fta: fta,
-
-                // Cálculo dos percentuais
-                fgPerc: fga > 0 ? Number(((fgm / fga) * 100).toFixed(0)) : 0,
-                tpPerc: tpa > 0 ? Number(((tpm / tpa) * 100).toFixed(0)) : 0,
-                ftPerc: fta > 0 ? Number(((ftm / fta) * 100).toFixed(0)) : 0,
-              });
-            }
+              // Percentuais de acerto
+              fgPerc: fga > 0 ? Number(((fgm / fga) * 100).toFixed(0)) : 0,
+              tpPerc: tpa > 0 ? Number(((tpm / tpa) * 100).toFixed(0)) : 0,
+              ftPerc: fta > 0 ? Number(((ftm / fta) * 100).toFixed(0)) : 0,
+            });
           }
         }
 
@@ -244,11 +241,17 @@ const RankingJogadores: React.FC = () => {
             <option value="roubosAsc">Roubos (Menor para Maior)</option>
             <option value="spgDesc">Roubos Média (Maior para Menor)</option>
             <option value="spgAsc">Roubos Média (Menor para Maior)</option>
-            <option value="tpPercDesc">3P Porcentagem (Maior para Menor)</option>
+            <option value="tpPercDesc">
+              3P Porcentagem (Maior para Menor)
+            </option>
             <option value="tpPercAsc">3P Porcentagem (Menor para Maior)</option>
-            <option value="fgPercDesc">FG Porcentagem (Maior para Menor)</option>
+            <option value="fgPercDesc">
+              FG Porcentagem (Maior para Menor)
+            </option>
             <option value="fgPercAsc">FG Porcentagem (Menor para Maior)</option>
-            <option value="ftPercDesc">FT Porcentagem (Maior para Menor)</option>
+            <option value="ftPercDesc">
+              FT Porcentagem (Maior para Menor)
+            </option>
             <option value="ftPercAsc">FT Porcentagem (Menor para Maior)</option>
           </select>
         </div>

@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { db, collection, getDocs } from "../../firebase";
+import { QueryDocumentSnapshot } from "firebase/firestore";
 import { User } from "lucide-react";
 
 interface Jogador {
@@ -14,7 +15,6 @@ interface Jogador {
   faltas: number;
   erros: number;
   posicao: string;
-
 }
 
 interface Time {
@@ -46,45 +46,65 @@ const abreviacoesPosicoes: { [key: string]: string } = {
 
 const ExibirTimes: React.FC = () => {
   const [times, setTimes] = useState<Time[]>([]);
-
   useEffect(() => {
     const fetchTimes = async () => {
       try {
-        const querySnapshot = await getDocs(collection(db, "times"));
-        const timesData = querySnapshot.docs.map((doc) => {
-          const timeData = doc.data();
+        const timesCollection = collection(db, "times_v2");
+        const timesSnapshot = await getDocs(timesCollection);
 
-          const jogadores = timeData.Jogadores
-            ? Object.keys(timeData.Jogadores)
-                .map((key) => ({
-                  nome: timeData.Jogadores[key].Nome || "Desconhecido",
-                  posicao: timeData.Jogadores[key]["Posição"] || "Desconhecida", // Corrigindo para "Posição" com acento
-                  pontuacao: timeData.Jogadores[key].pontuacao || 0,
-                  rebotes: timeData.Jogadores[key].rebotes || 0,
-                  assistencias: timeData.Jogadores[key].assistencias || 0,
-                  roubos: timeData.Jogadores[key].roubos || 0,
-                  bloqueios: timeData.Jogadores[key].bloqueios || 0,
-                  faltas: timeData.Jogadores[key].faltas || 0,
-                  erros: timeData.Jogadores[key].erros || 0,
-                }))
-                .sort(
-                  (a, b) =>
-                    (ordemPosicoes[a.posicao] || 99) -
-                    (ordemPosicoes[b.posicao] || 99)
-                )
-            : [];
+        const timesData = await Promise.all(
+          timesSnapshot.docs.map(async (doc) => {
+            const timeId = doc.id;
+            const timeData = doc.data();
 
-          return {
-            id: doc.id,
-            Nome: timeData.Nome,
-            Dono: timeData.Dono || "Desconhecido", // Acessando a propriedade "Dono"
-            Jogadores: jogadores,
-            Vitorias: timeData.Vitorias || 0, // Carregando vitórias
-            Derrotas: timeData.Derrota || 0,  // Carregando derrotas
-            Jogos: timeData.Jogos || 0,
-            Empates:timeData.Empates || 0,
-          };
-        });
+            const jogadoresRef = collection(
+              db,
+              "times_v2",
+              timeId,
+              "jogadores"
+            );
+            const snapshot = await getDocs(jogadoresRef);
+
+            const jogadores: Jogador[] = snapshot.docs
+              .map((jogadorDoc) => {
+                const jogador = jogadorDoc.data();
+
+                console.log("Jogador nome:", jogador.nome);
+                console.log("Jogador posição:", jogador.posicao);
+
+                return {
+                  nome: jogador.nome || "Desconhecido",
+                  posicao: jogador.posicao || "Desconhecida",
+                  pontuacao: jogador.pontuacao || 0,
+                  rebotes: jogador.rebotes || 0,
+                  assistencias: jogador.assistencias || 0,
+                  roubos: jogador.roubos || 0,
+                  bloqueios: jogador.bloqueios || 0,
+                  faltas: jogador.faltas || 0,
+                  erros: jogador.erros || 0,
+                };
+              })
+              .sort(
+                (a, b) =>
+                  (ordemPosicoes[a.posicao] || 99) -
+                  (ordemPosicoes[b.posicao] || 99)
+              );
+
+            return {
+              id: timeId,
+              Nome: timeData.nome || "Sem Nome",
+              Dono: timeData.dono || "Desconhecido",
+              Jogadores: jogadores,
+              Vitorias: timeData.vitorias || 0,
+              Derrotas: timeData.derrotas || 0,
+              Jogos: timeData.jogos || 0,
+              Empates: timeData.empates || 0,
+              Pontos: timeData.pontos || 0,
+              PontosFeitos: timeData.pontosFeitos || 0,
+              PontosRecebidos: timeData.pontosRecebidos || 0,
+            };
+          })
+        );
 
         setTimes(timesData);
       } catch (error) {
@@ -97,7 +117,7 @@ const ExibirTimes: React.FC = () => {
 
   return (
     <div className="bg-gray-700 border border-gray-600 rounded-2xl p-8 space-y-6 h-auto mt-6 w-auto mt-12 md:mt-24">
-      <div className="flex items-center md:flex-row flex-col justify-center" >
+      <div className="flex items-center md:flex-row flex-col justify-center">
         <User size={35} />
         <h2 className="font-heading font-semibold text-gray-200 text-md ml-2.5 md:text-3xl text-2xl md:mt-0 mt-6 uppercase">
           Times e Jogadores
@@ -116,7 +136,8 @@ const ExibirTimes: React.FC = () => {
                 <h3 className="text-xl font-bold text-gray-200 md:text-left text-center md:mt-6">
                   {/* Exibindo Vitorias e Derrotas */}
                   <span className="inline-block bg-gray-900 text-white text-sm font-bold py-1 px-3 rounded-full">
-                    J: {time.Jogos} - V: {time.Vitorias} - E: {time.Empates} - D: {time.Derrotas}
+                    J: {time.Jogos} - V: {time.Vitorias} - E: {time.Empates} -
+                    D: {time.Derrotas}
                   </span>
                   {/* Badge do GM (Dono) */}
                   <span className="inline-block bg-gray-900 text-white text-sm font-bold py-1 px-3 rounded-full ml-2">
