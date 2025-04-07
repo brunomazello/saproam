@@ -3,7 +3,7 @@ import { db } from "../../firebase";
 import {
   doc,
   getDoc,
-  updateDoc,
+  setDoc,
   getDocs,
   collection,
   deleteDoc,
@@ -20,6 +20,13 @@ interface Jogo {
   time2: string;
   twitchUser?: string; // Se twitchUser não for obrigatório
 }
+
+const gerarIDPadrao = (time1: string, time2: string, data: string) => {
+  const t1 = time1.trim().toLowerCase().replace(/\s+/g, "-");
+  const t2 = time2.trim().toLowerCase().replace(/\s+/g, "-");
+  const dataFormatada = data.replace(/-/g, "");
+  return `${t1}_vs_${t2}_${dataFormatada}`;
+};
 
 const EditarJogo = () => {
   const [jogos, setJogos] = useState<Jogo[]>([]);
@@ -68,19 +75,37 @@ const EditarJogo = () => {
     if (!jogoEmEdicao) return;
 
     try {
-      // A referência do documento deve ser corretamente acessada usando o ID do jogo
-      const docRef = doc(db, "calendario_v2", jogoEmEdicao.id); // Usando o ID específico do jogo
-      const docSnap = await getDoc(docRef);
+      // Obter o documento original para copiar todos os dados
+      const docRefOriginal = doc(db, "calendario_v2", jogoEmEdicao.id);
+      const docSnap = await getDoc(docRefOriginal);
 
       if (docSnap.exists()) {
-        // Se o jogo existe no Firestore, atualizamos os campos
-        await updateDoc(docRef, {
+        const jogoOriginal = docSnap.data();
+
+        // Gerar o novo ID baseado na nova data
+        const novoID = gerarIDPadrao(
+          jogoEmEdicao.time1,
+          jogoEmEdicao.time2,
+          jogoEmEdicao.data
+        );
+
+        // Criar referência para o novo documento
+        const novoDocRef = doc(db, "calendario_v2", novoID);
+
+        // Copiar todos os dados do jogo original para o novo documento
+        await setDoc(novoDocRef, {
+          ...jogoOriginal, // Copia todos os campos do documento original
           data: jogoEmEdicao.data, // Atualiza a data
           horario: jogoEmEdicao.horario, // Atualiza o horário
           time1: jogoEmEdicao.time1, // Atualiza o time 1
           time2: jogoEmEdicao.time2, // Atualiza o time 2
           twitchUser: jogoEmEdicao.twitchUser || "", // Atualiza o usuário da Twitch (opcional)
         });
+
+        // Se o ID antigo for diferente do novo, deleta o documento antigo
+        if (jogoEmEdicao.id !== novoID) {
+          await deleteDoc(docRefOriginal);
+        }
 
         toast.success("Jogo atualizado com sucesso!");
         setJogoEmEdicao(null);

@@ -19,6 +19,11 @@ type JogadorInfo = {
   posicao: string;
 };
 
+type JogadorComTime = JogadorInfo & {
+  time: string;  // Adiciona o time ao tipo
+};
+
+
 type JogadoresPorJogo = {
   [index: number]: {
     time1ComInfo: JogadorInfo[];
@@ -56,6 +61,13 @@ const abreviarPosicao = (posicao: string): string => {
   }
 };
 
+const gerarIDPadrao = (time1: string, time2: string, data: string) => {
+  const t1 = time1.trim().toLowerCase().replace(/\s+/g, "-");
+  const t2 = time2.trim().toLowerCase().replace(/\s+/g, "-");
+  const dataFormatada = data.replace(/-/g, "");
+  return `${t1}_vs_${t2}_${dataFormatada}`;
+};
+
 const ordenarPorPosicao = (
   jogadores: { nome: string; posicao: string }[]
 ): { nome: string; posicao: string }[] => {
@@ -66,7 +78,7 @@ const ordenarPorPosicao = (
 
 const Calendario = () => {
   const [jogosDoMes, setJogosDoMes] = useState<Jogo[]>([]);
-  const [exibirJogos, setExibirJogos] = useState(5); // valor inicial padrão (mobile)
+  const [exibirJogos, setExibirJogos] = useState(5);
   const [jogosExpandidos, setJogosExpandidos] = useState<Set<number>>(
     new Set()
   );
@@ -79,20 +91,71 @@ const Calendario = () => {
       .split(" ")
       .map((parte) =>
         parte === parte.toUpperCase()
-          ? parte // mantém siglas
+          ? parte
           : parte.charAt(0).toUpperCase() + parte.slice(1).toLowerCase()
       )
       .join(" ");
   };
-  
-  useEffect(() => {
-    // Aumentar quantidade de jogos exibidos no desktop
-    if (window.innerWidth >= 768) {
-      setExibirJogos(10); // por exemplo: 10 no desktop
-    }
-  }, []);
 
-  const toggleExpandir = async (index: number, jogo: Jogo) => {
+  const buscarJogadores = async (
+    time1: string,
+    time2: string,
+    data: string
+  ) => {
+    try {
+      const jogoID = gerarIDPadrao(time1, time2, data);
+      console.log(`Buscando jogo com ID: ${jogoID}`); // Log para verificar o ID gerado
+      const docRef = doc(db, "calendario_v2", jogoID);
+      const docSnap = await getDoc(docRef);
+  
+      if (docSnap.exists()) {
+        console.log(`Jogo ${jogoID} encontrado!`); // Confirma que o jogo foi encontrado
+        const jogoData = docSnap.data();
+        const jogadores: JogadorComTime[] = [];  // Alterado para JogadorComTime
+  
+        const jogadoresTime1 = jogoData.jogadores?.[time1] || {};
+        const jogadoresTime2 = jogoData.jogadores?.[time2] || {};
+  
+        // Adicionando jogadores ao time1
+        for (const key in jogadoresTime1) {
+          if (jogadoresTime1.hasOwnProperty(key)) {
+            jogadores.push({
+              nome: jogadoresTime1[key].nome,
+              posicao: jogadoresTime1[key].posicao || "Desconhecida",
+              time: time1,  // Aqui adiciona o time
+            });
+          }
+        }
+  
+        // Adicionando jogadores ao time2
+        for (const key in jogadoresTime2) {
+          if (jogadoresTime2.hasOwnProperty(key)) {
+            jogadores.push({
+              nome: jogadoresTime2[key].nome,
+              posicao: jogadoresTime2[key].posicao || "Desconhecida",
+              time: time2,  // Aqui adiciona o time
+            });
+          }
+        }
+  
+        return jogadores;
+      } else {
+        console.warn(`Jogo "${jogoID}" não encontrado.`);
+        return [];
+      }
+    } catch (error) {
+      console.error("Erro ao buscar jogadores do jogo:", error);
+      return [];
+    }
+  };
+  
+
+  const toggleExpandir = async (
+    index: number,
+    time1: string,
+    time2: string,
+    data: string
+  ) => {
     setJogosExpandidos((prev) => {
       const newSet = new Set(prev);
       if (newSet.has(index)) {
@@ -102,52 +165,22 @@ const Calendario = () => {
       }
       return newSet;
     });
-
-    const buscarJogadores = async (time: string): Promise<JogadorInfo[]> => {
-      try {
-        const docRef = doc(db, "times", formatarNomeTime(time));
-        const docSnap = await getDoc(docRef);
-
-        if (docSnap.exists()) {
-          const data = docSnap.data();
-
-          const jogadores: JogadorInfo[] = [];
-
-          for (const key in data.Jogadores) {
-            const jogador = data.Jogadores[key];
-            if (jogador?.Nome && jogador?.Posição) {
-              jogadores.push({
-                nome: jogador.Nome,
-                posicao: jogador.Posição,
-              });
-            }
-          }
-
-          return jogadores;
-        } else {
-          console.warn(`Time "${time}" não encontrado.`);
-          return [];
-        }
-      } catch (error) {
-        console.error(`Erro ao buscar jogadores do time ${time}:`, error);
-        return [];
-      }
-    };
-
-    // Se ainda não buscamos os jogadores desse jogo
+  
     if (!jogadoresPorJogo[index]) {
-      const [jogadores1, jogadores2] = await Promise.all([
-        buscarJogadores(jogo.time1),
-        buscarJogadores(jogo.time2),
-      ]);
-
-      console.log(jogadores1, jogadores2);
-
+      const jogadores = await buscarJogadores(time1, time2, data);
+  
+      const jogadoresTime1 = jogadores.filter(
+        (jogador) => jogador.time === time1
+      );
+      const jogadoresTime2 = jogadores.filter(
+        (jogador) => jogador.time === time2
+      );
+  
       setJogadoresPorJogo((prev) => ({
         ...prev,
         [index]: {
-          time1ComInfo: jogadores1,
-          time2ComInfo: jogadores2,
+          time1ComInfo: ordenarPorPosicao(jogadoresTime1),
+          time2ComInfo: ordenarPorPosicao(jogadoresTime2),
         },
       }));
     }
@@ -156,24 +189,21 @@ const Calendario = () => {
   useEffect(() => {
     const fetchJogos = async () => {
       try {
-        const docRef = doc(db, "calendario", "jogos");
-        const docSnap = await getDoc(docRef);
+        const colRef = collection(db, "calendario_v2"); // Acesso à coleção de jogos
+        const snapshot = await getDocs(colRef);
 
-        if (docSnap.exists()) {
+        if (!snapshot.empty) {
           const jogosList: Jogo[] = [];
-          const partidas = docSnap.data().partidas;
 
-          for (const key in partidas) {
-            if (partidas.hasOwnProperty(key)) {
-              const jogo = partidas[key];
-              jogosList.push({
-                data: jogo.data,
-                horario: jogo.horario,
-                time1: jogo.time1,
-                time2: jogo.time2,
-              });
-            }
-          }
+          snapshot.forEach((doc) => {
+            const jogo = doc.data();
+            jogosList.push({
+              data: jogo.data,
+              horario: jogo.horario,
+              time1: jogo.time1,
+              time2: jogo.time2,
+            });
+          });
 
           jogosList.sort((a, b) => {
             const dataA = new Date(a.data);
@@ -183,7 +213,7 @@ const Calendario = () => {
 
           setJogosDoMes(jogosList);
         } else {
-          console.log("Documento 'jogos' não encontrado!");
+          console.log("Nenhum jogo encontrado!");
         }
       } catch (error) {
         console.error("Erro ao carregar jogos:", error);
@@ -194,7 +224,7 @@ const Calendario = () => {
   }, []);
 
   const carregarMaisJogos = () => {
-    const maisJogos = window.innerWidth >= 768 ? 5 : 3; // desktop carrega +5, mobile +3
+    const maisJogos = window.innerWidth >= 768 ? 5 : 3;
     setExibirJogos((prev) => prev + maisJogos);
   };
 
@@ -208,14 +238,12 @@ const Calendario = () => {
   const jogoEncerrado = (data: string, horario: string): boolean => {
     const agora = new Date();
     const dataHoraJogo = new Date(`${data}T${horario}`);
-  
-    // Soma 1 dia ao horário do jogo
+
     const encerramento = new Date(dataHoraJogo);
     encerramento.setDate(encerramento.getDate() + 1);
-  
+
     return agora >= encerramento;
   };
-  
   return (
     <div className="p-6 max-w-3xl mx-auto" onScroll={handleScroll}>
       <div className="flex flex-col items-center">
@@ -230,7 +258,9 @@ const Calendario = () => {
           return (
             <div
               key={index}
-              onClick={() => toggleExpandir(index, jogo)}
+              onClick={() =>
+                toggleExpandir(index, jogo.time1, jogo.time2, jogo.data)
+              }
               className={`flex flex-col md:flex-row md:justify-between md:items-center border p-3 rounded-lg shadow-md cursor-pointer transition-colors duration-200 ${
                 jogoEncerrado(jogo.data, jogo.horario)
                   ? "bg-gray-700]/50 opacity-60"

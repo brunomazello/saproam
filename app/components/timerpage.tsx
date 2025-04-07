@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { db } from "../../firebase";
-import { doc, getDoc } from "firebase/firestore";
+import { doc, getDoc, collection, getDocs } from "firebase/firestore";
 
 // Tipos
 interface Jogo {
@@ -75,7 +75,7 @@ const ContagemRegressiva = () => {
   const [jogosExpandidos, setJogosExpandidos] = useState<Set<number>>(
     new Set()
   );
-  const [jogadoresPorJogo, setJogadoresPorJogo] = useState<JogadoresPorJogo>(
+  const [jogadoresPorJogo, setJogadoresPorJogo] = useState<JogadoresPorJogo>( 
     {}
   );
 
@@ -97,46 +97,62 @@ const ContagemRegressiva = () => {
   useEffect(() => {
     const fetchJogos = async () => {
       try {
-        const docRef = doc(db, "calendario", "jogos");
-        const docSnap = await getDoc(docRef);
-
-        if (docSnap.exists()) {
-          const jogosList: Jogo[] = [];
-          const partidas = docSnap.data().partidas;
-
-          for (const key in partidas) {
-            const jogo = partidas[key];
-            jogosList.push({
-              data: jogo.data,
-              horario: jogo.horario,
-              time1: jogo.time1,
-              time2: jogo.time2,
-              twitchUser: jogo.twitchUser,
-            });
-          }
-
-          const hoje = new Date();
-          const hojeBrasil = new Intl.DateTimeFormat("pt-BR", {
-            timeZone: "America/Sao_Paulo",
-            year: "numeric",
-            month: "2-digit",
-            day: "2-digit",
-          }).format(hoje);
-
-          const hojeStr = hojeBrasil.split("/").reverse().join("-");
-          const jogosDoDiaAtual = jogosList.filter(
-            (jogo) => jogo.data === hojeStr
-          );
-
-          setJogosDoDia(jogosDoDiaAtual);
-          setTemposRestantes(
-            jogosDoDiaAtual.map((jogo) => calcularTempoRestante(jogo.horario))
-          );
-        }
+        // Pega todos os documentos da coleção "calendario_v2"
+        const jogosRef = collection(db, "calendario_v2");
+        const querySnapshot = await getDocs(jogosRef);
+    
+        // Cria uma lista para armazenar os jogos encontrados
+        const jogosList: Jogo[] = [];
+    
+        querySnapshot.forEach((doc) => {
+          const jogoData = doc.data();
+          
+          // Pega as informações do jogo a partir do Firestore
+          const jogo = {
+            data: jogoData.data,
+            horario: jogoData.horario,
+            time1: jogoData.time1,
+            time2: jogoData.time2,
+            twitchUser: jogoData.twitchUser,
+            placar: jogoData.placar,
+            jogadores: jogoData.jogadores,
+          };
+    
+          // Adiciona o jogo à lista
+          jogosList.push(jogo);
+        });
+    
+        console.log("Todos os jogos:", jogosList);
+    
+        // Formatação da data para o dia atual
+        const hoje = new Date();
+        const hojeBrasil = new Intl.DateTimeFormat("pt-BR", {
+          timeZone: "America/Sao_Paulo",
+          year: "numeric",
+          month: "2-digit",
+          day: "2-digit",
+        }).format(hoje);
+    
+        const hojeStr = hojeBrasil.split("/").reverse().join("-");
+    
+        console.log("Data hoje formatada:", hojeStr);
+    
+        // Filtra os jogos para o dia atual
+        const jogosDoDiaAtual = jogosList.filter(
+          (jogo) => jogo.data === hojeStr
+        );
+    
+        console.log("Jogos do dia:", jogosDoDiaAtual);
+    
+        // Atualiza os estados do React com os jogos e tempos restantes
+        setJogosDoDia(jogosDoDiaAtual);
+        setTemposRestantes(
+          jogosDoDiaAtual.map((jogo) => calcularTempoRestante(jogo.horario))
+        );
       } catch (error) {
         console.error("Erro ao carregar jogos:", error);
       }
-    };
+    };    
 
     fetchJogos();
   }, []);
@@ -231,15 +247,11 @@ const ContagemRegressiva = () => {
                     </span>
                   </div>
                   <span
-                    className={`text-sm font-bold w-[150px] text-center ${
-                      temposRestantes[index] === "🔥 LIVE 🔴"
-                        ? "text-danger animate-pulse"
-                        : "text-gray-100"
-                    }`}
+                    className={`text-sm font-bold w-[150px] text-center ${temposRestantes[index] === "🔥 LIVE 🔴" ? "text-danger animate-pulse" : "text-gray-100"}`}
                   >
                     {temposRestantes[index] === "🔥 LIVE 🔴" ? (
                       <a
-                      href={`https://www.twitch.tv/${jogo.twitchUser}`}
+                        href={`https://www.twitch.tv/${jogo.twitchUser}`}
                         target="_blank"
                         rel="noopener noreferrer"
                         className="text-danger animate-pulse hover:text-blue-500 font-bold cursor-pointer"
@@ -263,25 +275,14 @@ const ContagemRegressiva = () => {
                         <ul className="space-y-2">
                           {ordenarPorPosicao(jogadores.time1ComInfo || []).map(
                             (jogador, i) => (
-                              <li
-                                key={i}
-                                className="flex items-center gap-3 bg-gray-700 p-2 rounded-md shadow hover:bg-gray-600 transition"
-                              >
-                                <div className="bg-gray-500 text-white w-8 h-8 flex items-center justify-center rounded-full text-sm font-semibold uppercase">
-                                  {jogador.nome[0]}
-                                </div>
-                                <span className="font-medium">
-                                  {jogador.nome}
-                                </span>
-                                <span className="ml-auto text-[--color-gray-300] text-xs font-mono">
-                                  {abreviarPosicao(jogador.posicao)}
-                                </span>
+                              <li key={i} className="flex justify-between">
+                                <span>{jogador.nome}</span>
+                                <span>{abreviarPosicao(jogador.posicao)}</span>
                               </li>
                             )
                           )}
                         </ul>
                       </div>
-
                       <div>
                         <h4 className="text-gray-200 font-bold text-lg mb-3 border-b border-gray-300 pb-1">
                           {jogo.time2}
@@ -289,19 +290,9 @@ const ContagemRegressiva = () => {
                         <ul className="space-y-2">
                           {ordenarPorPosicao(jogadores.time2ComInfo || []).map(
                             (jogador, i) => (
-                              <li
-                                key={i}
-                                className="flex items-center gap-3 bg-gray-700 p-2 rounded-md shadow hover:bg-gray-600 transition"
-                              >
-                                <div className="bg-gray-500 text-white w-8 h-8 flex items-center justify-center rounded-full text-sm font-semibold uppercase">
-                                  {jogador.nome[0]}
-                                </div>
-                                <span className="font-medium">
-                                  {jogador.nome}
-                                </span>
-                                <span className="ml-auto text-gray-300 text-xs font-mono">
-                                  {abreviarPosicao(jogador.posicao)}
-                                </span>
+                              <li key={i} className="flex justify-between">
+                                <span>{jogador.nome}</span>
+                                <span>{abreviarPosicao(jogador.posicao)}</span>
                               </li>
                             )
                           )}
@@ -315,16 +306,8 @@ const ContagemRegressiva = () => {
           })}
         </ul>
       ) : (
-        <p className="text-center text-[--color-gray-300]">
-          📭 Nenhum jogo programado para hoje.
-        </p>
+        <p className="text-center text-white">Nenhum jogo agendado para hoje.</p>
       )}
-
-      <div className="flex items-center w-full justify-end mt-4">
-        <a href="/calendario" className="hover:text-gray-300 hover:underline">
-          Ver completo
-        </a>
-      </div>
     </div>
   );
 };
