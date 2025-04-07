@@ -74,9 +74,9 @@ const ListarTimes: React.FC = () => {
           empates,
           pontos,
           pontosFeitos,
-          pontosRecebidos,
+           pontosRecebidos,
           jogadores: jogadoresArray.map((j) => j.Nome),
-          jogos,
+         jogos,
         });
       }
   

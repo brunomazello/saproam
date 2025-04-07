@@ -18,53 +18,79 @@ interface Time {
   jogos: number[];
 }
 
+interface Jogador {
+  Nome: string;
+  pontuacao: number;
+  [key: string]: any; // aceita outros campos como assistencias, bloqueios etc
+}
+
+
 const ListarTimesMini: React.FC = () => {
   const [times, setTimes] = useState<Time[]>([]);
 
-  useEffect(() => {
-    const fetchTimes = async () => {
-      const querySnapshot = await getDocs(collection(db, "times"));
-      const timesData = querySnapshot.docs.map((doc) => {
-        const data = doc.data();
-        console.log(data);
-        const vitorias = data.Vitorias || 0;
-        const derrotas = data.Derrotas || 0;
-        const empates = data.Empates || 0;
-        const pontos = data.Pontos || vitorias * 3 + empates * 1; // Correção: Vitória vale 3 pontos, empate vale 1
-        const jogos = data.Jogos || 0;
-
-        return {
-          id: doc.id,
-          nome: data.Nome,
-          vitorias,
-          derrotas,
-          empates,
-          pontos,
+   useEffect(() => {
+     const fetchTimes = async () => {
+       const timesSnapshot = await getDocs(collection(db, "times_v2"));
+       const timesData: Time[] = [];
+   
+       for (const doc of timesSnapshot.docs) {
+         const data = doc.data();
+         console.log("DATA DO TIME:", data);
+   
+         const vitorias = data.vitorias || 0;
+         const derrotas = data.derrotas || 0;
+         const empates = data.empates || 0;
+         const pontos = data.pontos || vitorias * 3 + empates;
+         const jogos = data.jogos || 0;
+         const pontosFeitos = data.pontosFeitos || 0;
+         const pontosRecebidos = data.pontosRecebidos || 0;
+   
+         const jogadoresSnapshot = await getDocs(collection(db, "times_v2", doc.id, "jogadores"));
+   
+         const jogadoresArray: Jogador[] = jogadoresSnapshot.docs.map((jogadorDoc) => {
+           const jogadorData = jogadorDoc.data();
+   
+           console.log("JOGADOR:", jogadorData);
+   
+           return {
+             Nome: jogadorData.nome || jogadorData.Nome || "Desconhecido",
+             posicao: jogadorData.posicao || jogadorData["Posição"] || "Desconhecida",
+             pontuacao: jogadorData.pontuacao || 0,
+             rebotes: jogadorData.rebotes || 0,
+             assistencias: jogadorData.assistencias || 0,
+             roubos: jogadorData.roubos || 0,
+             bloqueios: jogadorData.bloqueios || 0,
+             faltas: jogadorData.faltas || 0,
+             erros: jogadorData.erros || 0,
+           };
+         });
+   
+         timesData.push({
+           id: doc.id,
+           nome: data.nome || "Sem Nome",
+           vitorias,
+           derrotas,
+           empates,
+           pontos,
+           pontosFeitos,
+            pontosRecebidos,
+           jogadores: jogadoresArray.map((j) => j.Nome),
           jogos,
-          pontosFeitos: data.pontosFeitos || 0,
-          pontosRecebidos: data.pontosRecebidos || 0,
-          jogadores: [
-            data.Jogador1,
-            data.Jogador2,
-            data.Jogador3,
-            data.Jogador4,
-            data.Jogador5,
-          ],
-        };
-      }) as Time[];
-
-      // Ordenar os times por pontos, depois por vitórias e depois por pontos feitos
-      timesData.sort((a, b) => {
-        if (b.pontos !== a.pontos) return b.pontos - a.pontos; // Primeiro ordena pelos pontos
-        if (b.vitorias !== a.vitorias) return b.vitorias - a.vitorias; // Depois pelas vitórias
-        return b.pontosFeitos - a.pontosFeitos; // Em último caso, pelos pontos feitos
-      });
-
-      setTimes(timesData);
-    };
-
-    fetchTimes();
-  }, []);
+         });
+       }
+   
+       // Ordenar
+       timesData.sort((a, b) => {
+         if (b.pontos !== a.pontos) return b.pontos - a.pontos;
+         if (b.vitorias !== a.vitorias) return b.vitorias - a.vitorias;
+         return b.pontosFeitos - a.pontosFeitos;
+       });
+   
+       setTimes(timesData);
+     };
+   
+     fetchTimes();
+   }, []);
 
   return (
     <div className="bg-gray-700 border border-gray-600 rounded-2xl p-8 space-y-6 h-auto w-full">
