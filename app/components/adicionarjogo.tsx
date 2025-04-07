@@ -1,12 +1,6 @@
 import { useEffect, useState } from "react";
 import { db, setDoc } from "../../firebase";
-import {
-  collection,
-  addDoc,
-  doc,
-  getDoc,
-  getDocs,
-} from "firebase/firestore";
+import { collection, addDoc, doc, getDoc, getDocs } from "firebase/firestore";
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 
@@ -26,24 +20,6 @@ const AdicionarJogo = () => {
     return `${t1}_vs_${t2}_${dataFormatada}`;
   }
 
-  const criarTimeSeNaoExiste = async (nomeTime: string) => {
-    const timeRef = doc(db, "times_v2", nomeTime);
-    const snap = await getDoc(timeRef);
-
-    if (!snap.exists()) {
-      await setDoc(timeRef, {
-        nome: nomeTime,
-        dono: "Desconhecido",
-        vitorias: 0,
-        derrotas: 0,
-        empates: 0,
-        jogos: 0,
-        pontos: 0,
-        pontosFeitos: 0,
-        pontosRecebidos: 0,
-      });
-    }
-  };
 
   const buscarJogadoresDoTime = async (nomeTime: string) => {
     const jogadoresRef = collection(db, "times_v2", nomeTime, "jogadores");
@@ -55,6 +31,7 @@ const AdicionarJogo = () => {
       jogadores[doc.id] = {
         nome: data.nome || "",
         posicao: data.posicao || "",
+        // Remova os campos indesejados, como pontosFeitos e pontosRecebidos
         pontuacao: 0,
         rebotes: 0,
         assistencias: 0,
@@ -68,6 +45,7 @@ const AdicionarJogo = () => {
         tpa: 0,
         ftm: 0,
         fta: 0,
+        // Não inclua pontosFeitos e pontosRecebidos aqui
       };
     });
 
@@ -111,8 +89,6 @@ const AdicionarJogo = () => {
       const id = gerarIDPadrao(time1, time2, data);
       const docRef = doc(db, "calendario_v2", id);
 
-      await criarTimeSeNaoExiste(time1);
-      await criarTimeSeNaoExiste(time2);
 
       const jogadoresTime1 = await buscarJogadoresDoTime(time1);
       const jogadoresTime2 = await buscarJogadoresDoTime(time2);
@@ -156,7 +132,10 @@ const AdicionarJogo = () => {
       <form onSubmit={handleSubmit} className="space-y-6">
         <div className="grid grid-cols-1 gap-4">
           <div>
-            <label htmlFor="data" className="block text-sm font-medium text-gray-300">
+            <label
+              htmlFor="data"
+              className="block text-sm font-medium text-gray-300"
+            >
               Data
             </label>
             <input
@@ -169,7 +148,10 @@ const AdicionarJogo = () => {
           </div>
 
           <div>
-            <label htmlFor="horario" className="block text-sm font-medium text-gray-300">
+            <label
+              htmlFor="horario"
+              className="block text-sm font-medium text-gray-300"
+            >
               Horário
             </label>
             <input
@@ -182,7 +164,10 @@ const AdicionarJogo = () => {
           </div>
 
           <div>
-            <label htmlFor="time1" className="block text-sm font-medium text-gray-300">
+            <label
+              htmlFor="time1"
+              className="block text-sm font-medium text-gray-300"
+            >
               Time 1
             </label>
             <select
@@ -201,7 +186,10 @@ const AdicionarJogo = () => {
           </div>
 
           <div>
-            <label htmlFor="time2" className="block text-sm font-medium text-gray-300">
+            <label
+              htmlFor="time2"
+              className="block text-sm font-medium text-gray-300"
+            >
               Time 2
             </label>
             <select
@@ -220,7 +208,10 @@ const AdicionarJogo = () => {
           </div>
 
           <div>
-            <label htmlFor="twitchUser" className="block text-sm font-medium text-gray-300">
+            <label
+              htmlFor="twitchUser"
+              className="block text-sm font-medium text-gray-300"
+            >
               Usuário da Twitch
             </label>
             <input

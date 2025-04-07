@@ -64,19 +64,23 @@ const EditarJogador: React.FC = () => {
   const [modoEdicao, setModoEdicao] = useState<"adicionar" | "remover">(
     "adicionar"
   );
-
   useEffect(() => {
-    setTimes([
-      "Falcões",
-      "4revis",
-      "Firewolf",
-      "Los Perro Loco",
-      "OKC",
-      "Super Dogs",
-      "Brazilian Delay",
-    ]);
-  }, []);
+    const fetchTimes = async () => {
+      try {
+        // Refere-se à coleção de times no Firestore
+        const timesRef = collection(db, "times_v2");
+        const snapshot = await getDocs(timesRef);
+        const timesList = snapshot.docs.map((doc) => doc.id); // Você pode pegar o ID dos times ou os dados completos, dependendo do seu banco
 
+        setTimes(timesList); // Atualiza o estado com os times
+      } catch (error) {
+        console.error("Erro ao carregar os times:", error);
+        setError("Erro ao carregar os times.");
+      }
+    };
+
+    fetchTimes();
+  }, []); // Chama a função uma vez quando o componente for montado
   useEffect(() => {
     if (jogosDoTime.length > 0) {
       setJogoSelecionado(jogosDoTime[0]); // Seleciona o primeiro jogo por padrão
@@ -131,13 +135,22 @@ const EditarJogador: React.FC = () => {
       const jogosDoTime = snapshot.docs
         .filter((doc) => {
           const data = doc.data();
-          return data.time1 === timeId || data.time2 === timeId;
+          // Normaliza para minúsculas e remove espaços extras para comparar
+          const time1Normalized = data.time1.toLowerCase().trim();
+          const time2Normalized = data.time2.toLowerCase().trim();
+          const nomeTimeNormalized = timeId.toLowerCase().trim();
+
+          return (
+            time1Normalized === nomeTimeNormalized ||
+            time2Normalized === nomeTimeNormalized
+          );
         })
         .map((doc) => ({
           id: doc.id,
           ...doc.data(),
         }));
 
+      console.log(jogosDoTime); // Verifique os jogos filtrados
       return jogosDoTime;
     } catch (error) {
       console.error("Erro ao buscar jogos do time:", error);

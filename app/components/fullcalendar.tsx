@@ -273,15 +273,6 @@ const Calendario = () => {
     }
   };
 
-  const jogoEncerrado = (data: string, horario: string): boolean => {
-    const agora = new Date();
-    const dataHoraJogo = new Date(`${data}T${horario}`);
-
-    const encerramento = new Date(dataHoraJogo);
-    encerramento.setDate(encerramento.getDate() + 1);
-
-    return agora >= encerramento;
-  };
   return (
     <div className="p-6 max-w-3xl mx-auto" onScroll={handleScroll}>
       <div className="flex flex-col items-center">
@@ -293,16 +284,6 @@ const Calendario = () => {
       <div className="space-y-4">
         {jogosDoMes.slice(0, exibirJogos).map((jogo, index) => {
           const isExpanded = jogosExpandidos.has(index);
-
-          // Verificar se o jogo está encerrado com base na data e horário
-          const jogoEncerrado = (data: string, horario: string): boolean => {
-            const dataAtual = new Date();
-            const dataJogo = new Date(`${data}T${horario}`);
-            return dataJogo < dataAtual;
-          };
-
-          const isGameEnded = jogoEncerrado(jogo.data, jogo.horario); // Chama a função corretamente
-
           return (
             <div
               key={jogo.jogoID}
@@ -310,14 +291,14 @@ const Calendario = () => {
                 toggleExpandir(index, jogo.time1, jogo.time2, jogo.data)
               }
               className={`flex flex-col md:flex-row md:justify-between md:items-center border p-3 rounded-lg shadow-md cursor-pointer transition-colors duration-200 ${
-                isGameEnded
+                jogo.encerrado
                   ? "bg-gray-700/50 opacity-60"
                   : "bg-gray-700 hover:bg-gray-600"
               }`}
             >
               <div className="flex flex-col w-full">
                 <span className="font-semibold text-gray-200 flex flex-col md:flex-row md:items-center md:gap-6 md:text-left text-center">
-                  {isGameEnded && (
+                  {jogo.encerrado && (
                     <span className="mt-2 mb-1 md:mt-0 md:mb-0 bg-red-600 text-white text-xs font-semibold px-2 py-1 rounded w-fit mx-auto md:mx-0">
                       ENCERRADO
                     </span>
@@ -337,7 +318,7 @@ const Calendario = () => {
                   </span>
                 </span>
 
-                {isGameEnded && (
+                {jogo.encerrado !== false && (
                   <div className="mt-4">
                     <div className="bg-gray-800 p-6 rounded-xl shadow-md transition-all duration-300 cursor-pointer">
                       <div className="flex flex-col md:flex-row justify-between items-center text-white">
@@ -363,12 +344,13 @@ const Calendario = () => {
                           </span>
                         </div>
                       </div>
-
-                      <div className="mt-4 text-center text-gray-200 font-semibold text-sm md:text-base">
-                        <span className="inline-block py-1 px-3 bg-gray-900/80 rounded-lg text-xs md:text-sm">
-                          Jogo Encerrado
-                        </span>
-                      </div>
+                      {jogo.encerrado && (
+                        <div className="mt-4 text-center text-gray-200 font-semibold text-sm md:text-base">
+                          <span className="inline-block py-1 px-3 bg-gray-900/80 rounded-lg text-xs md:text-sm">
+                            Jogo Encerrado
+                          </span>
+                        </div>
+                      )}
 
                       <div className="mt-4 text-center text-gray-300 text-sm md:text-base flex justify-center items-center">
                         <span className="inline-block py-2 px-4 text-sm font-semibold hover:text-gray-700 text-gray-100 cursor-pointer hover:bg-gray-200 rounded-lg">

@@ -1,3 +1,5 @@
+"use client";
+
 import { useState, useEffect } from "react";
 import { db } from "../../firebase";
 import { doc, getDoc, collection, getDocs } from "firebase/firestore";
@@ -9,7 +11,6 @@ interface Jogo {
   time1: string;
   time2: string;
   twitchUser: string;
-  placar?: string; // Opcional para jogos que já ocorreram
 }
 
 type JogadorInfo = {
@@ -74,16 +75,15 @@ const ContagemRegressiva = () => {
   const [jogosExpandidos, setJogosExpandidos] = useState<Set<number>>(
     new Set()
   );
-  const [jogadoresPorJogo, setJogadoresPorJogo] = useState<JogadoresPorJogo>({});
+  const [jogadoresPorJogo, setJogadoresPorJogo] = useState<JogadoresPorJogo>( 
+    {}
+  );
 
-  const calcularTempoRestante = (horario: string, data: string) => {
+  const calcularTempoRestante = (horario: string) => {
     const agora = new Date();
     const [hora, minuto] = horario.split(":").map(Number);
-    const [ano, mes, dia] = data.split("-").map(Number);
-    const horarioJogo = new Date(ano, mes - 1, dia, hora, minuto, 0, 0); // Data ajustada para a data e hora do jogo
-
-    // Verifica se a data do jogo já passou
-    if (agora >= horarioJogo) return "ENCERRADO";
+    const horarioJogo = new Date(agora);
+    horarioJogo.setHours(hora, minuto, 0, 0);
 
     const diferenca = horarioJogo.getTime() - agora.getTime();
     if (diferenca <= 0) return "🔥 LIVE 🔴";
@@ -100,13 +100,13 @@ const ContagemRegressiva = () => {
         // Pega todos os documentos da coleção "calendario_v2"
         const jogosRef = collection(db, "calendario_v2");
         const querySnapshot = await getDocs(jogosRef);
-
+    
         // Cria uma lista para armazenar os jogos encontrados
         const jogosList: Jogo[] = [];
-
+    
         querySnapshot.forEach((doc) => {
           const jogoData = doc.data();
-
+          
           // Pega as informações do jogo a partir do Firestore
           const jogo = {
             data: jogoData.data,
@@ -114,16 +114,16 @@ const ContagemRegressiva = () => {
             time1: jogoData.time1,
             time2: jogoData.time2,
             twitchUser: jogoData.twitchUser,
-            placar: jogoData.placar, // Agora está incluindo o placar
+            placar: jogoData.placar,
             jogadores: jogoData.jogadores,
           };
-
+    
           // Adiciona o jogo à lista
           jogosList.push(jogo);
         });
-
+    
         console.log("Todos os jogos:", jogosList);
-
+    
         // Formatação da data para o dia atual
         const hoje = new Date();
         const hojeBrasil = new Intl.DateTimeFormat("pt-BR", {
@@ -132,27 +132,27 @@ const ContagemRegressiva = () => {
           month: "2-digit",
           day: "2-digit",
         }).format(hoje);
-
+    
         const hojeStr = hojeBrasil.split("/").reverse().join("-");
-
+    
         console.log("Data hoje formatada:", hojeStr);
-
+    
         // Filtra os jogos para o dia atual
         const jogosDoDiaAtual = jogosList.filter(
           (jogo) => jogo.data === hojeStr
         );
-
+    
         console.log("Jogos do dia:", jogosDoDiaAtual);
-
+    
         // Atualiza os estados do React com os jogos e tempos restantes
         setJogosDoDia(jogosDoDiaAtual);
         setTemposRestantes(
-          jogosDoDiaAtual.map((jogo) => calcularTempoRestante(jogo.horario, jogo.data))
+          jogosDoDiaAtual.map((jogo) => calcularTempoRestante(jogo.horario))
         );
       } catch (error) {
         console.error("Erro ao carregar jogos:", error);
       }
-    };
+    };    
 
     fetchJogos();
   }, []);
@@ -160,7 +160,7 @@ const ContagemRegressiva = () => {
   useEffect(() => {
     const intervalo = setInterval(() => {
       setTemposRestantes(
-        jogosDoDia.map((jogo) => calcularTempoRestante(jogo.horario, jogo.data))
+        jogosDoDia.map((jogo) => calcularTempoRestante(jogo.horario))
       );
     }, 60000);
 
@@ -247,13 +247,7 @@ const ContagemRegressiva = () => {
                     </span>
                   </div>
                   <span
-                    className={`text-sm font-bold w-[150px] text-center ${
-                      temposRestantes[index] === "🔥 LIVE 🔴"
-                        ? "text-danger animate-pulse"
-                        : temposRestantes[index] === "ENCERRADO"
-                        ? "text-gray-400"
-                        : "text-gray-100"
-                    }`}
+                    className={`text-sm font-bold w-[150px] text-center ${temposRestantes[index] === "🔥 LIVE 🔴" ? "text-danger animate-pulse" : "text-gray-100"}`}
                   >
                     {temposRestantes[index] === "🔥 LIVE 🔴" ? (
                       <a
@@ -264,12 +258,6 @@ const ContagemRegressiva = () => {
                       >
                         🔴 ASSISTIR LIVE
                       </a>
-                    ) : temposRestantes[index] === "ENCERRADO" ? (
-                      jogo.placar ? (
-                        <span className="font-bold text-gray-200">{jogo.placar}</span>
-                      ) : (
-                        <span className="text-gray-400">ENCERRADO</span>
-                      )
                     ) : (
                       temposRestantes[index]
                     )}
@@ -295,7 +283,6 @@ const ContagemRegressiva = () => {
                           )}
                         </ul>
                       </div>
-
                       <div>
                         <h4 className="text-gray-200 font-bold text-lg mb-3 border-b border-gray-300 pb-1">
                           {jogo.time2}
@@ -319,7 +306,7 @@ const ContagemRegressiva = () => {
           })}
         </ul>
       ) : (
-        <p className="text-center text-gray-400">Sem jogos para hoje.</p>
+        <p className="text-center text-white">Nenhum jogo agendado para hoje.</p>
       )}
     </div>
   );
