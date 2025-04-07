@@ -150,110 +150,126 @@ const RegistrarResultado = () => {
     e.preventDefault();
     if (!jogoSelecionado) return;
     setLoading(true);
-
+  
     const jogo = jogos.find((j) => j.id === jogoSelecionado);
     if (!jogo) {
       toast.error("Jogo não encontrado.");
       setLoading(false);
       return;
     }
-
+  
     const { time1, time2, horario } = jogo;
-
-    // Soma total dos pontos
+  
     const totalTime1Jogo1 = pontuacaoTime1Jogo1;
     const totalTime2Jogo1 = pontuacaoTime2Jogo1;
     const totalTime1Jogo2 = pontuacaoTime1Jogo2;
     const totalTime2Jogo2 = pontuacaoTime2Jogo2;
-
-    const isEmpateJogo1 = totalTime1Jogo1 === totalTime2Jogo1;
-    const vencedorJogo1 =
-      totalTime1Jogo1 > totalTime2Jogo1 ? time1 : isEmpateJogo1 ? null : time2;
-    const perdedorJogo1 = vencedorJogo1 === time1 ? time2 : time1;
-
-    const isEmpateJogo2 = totalTime1Jogo2 === totalTime2Jogo2;
-    const vencedorJogo2 =
-      totalTime1Jogo2 > totalTime2Jogo2 ? time1 : isEmpateJogo2 ? null : time2;
-    const perdedorJogo2 = vencedorJogo2 === time1 ? time2 : time1;
-
+  
+    const placarTime1 = totalTime1Jogo1 + totalTime1Jogo2;
+    const placarTime2 = totalTime2Jogo1 + totalTime2Jogo2;
+  
+    console.log("🟡 Enviando resultado...");
+    console.log("📊 Pontuações:");
+    console.log(`Jogo 1 - ${time1}: ${totalTime1Jogo1}, ${time2}: ${totalTime2Jogo1}`);
+    console.log(`Jogo 2 - ${time1}: ${totalTime1Jogo2}, ${time2}: ${totalTime2Jogo2}`);
+  
+    let vitoriasTime1 = 0;
+    let vitoriasTime2 = 0;
+  
+    if (totalTime1Jogo1 > totalTime2Jogo1) {
+      vitoriasTime1++;
+      console.log(`✅ ${time1} venceu o Jogo 1`);
+    } else if (totalTime1Jogo1 < totalTime2Jogo1) {
+      vitoriasTime2++;
+      console.log(`✅ ${time2} venceu o Jogo 1`);
+    } else {
+      console.log("⚖️ Jogo 1 empatado");
+    }
+  
+    if (totalTime1Jogo2 > totalTime2Jogo2) {
+      vitoriasTime1++;
+      console.log(`✅ ${time1} venceu o Jogo 2`);
+    } else if (totalTime1Jogo2 < totalTime2Jogo2) {
+      vitoriasTime2++;
+      console.log(`✅ ${time2} venceu o Jogo 2`);
+    } else {
+      console.log("⚖️ Jogo 2 empatado");
+    }
+  
+    let resultadoTime1: "vitoria" | "derrota" | "empate";
+    let resultadoTime2: "vitoria" | "derrota" | "empate";
+  
+    if (vitoriasTime1 > vitoriasTime2) {
+      resultadoTime1 = "vitoria";
+      resultadoTime2 = "derrota";
+      console.log(`🏆 ${time1} venceu no total (${vitoriasTime1} x ${vitoriasTime2})`);
+    } else if (vitoriasTime1 < vitoriasTime2) {
+      resultadoTime1 = "derrota";
+      resultadoTime2 = "vitoria";
+      console.log(`🏆 ${time2} venceu no total (${vitoriasTime2} x ${vitoriasTime1})`);
+    } else {
+      resultadoTime1 = "empate";
+      resultadoTime2 = "empate";
+      console.log(`🤝 Empate no total (${vitoriasTime1} x ${vitoriasTime2})`);
+    }
+  
     try {
       const jogoRef = doc(db, "calendario_v2", jogoSelecionado);
       await updateDoc(jogoRef, {
         placar: {
           jogo1: {
             [time1]: totalTime1Jogo1,
-
             [time2]: totalTime2Jogo1,
           },
           jogo2: {
             [time1]: totalTime1Jogo2,
             [time2]: totalTime2Jogo2,
           },
+          total: {
+            [time1]: placarTime1,
+            [time2]: placarTime2,
+          },
+          resultado: {
+            [time1]: resultadoTime1,
+            [time2]: resultadoTime2,
+          },
         },
       });
-
-      // Atualizando os times
+  
       await atualizarTime(time1, {
-        pontosFeitos: totalTime1Jogo1 + totalTime1Jogo2,
-        pontosRecebidos: totalTime2Jogo1 + totalTime2Jogo2,
-        resultado:
-          isEmpateJogo1 && isEmpateJogo2
-            ? "empate"
-            : vencedorJogo1 === time1 || vencedorJogo2 === time1
-            ? "vitoria"
-            : "derrota",
+        pontosFeitos: placarTime1,
+        pontosRecebidos: placarTime2,
+        resultado: resultadoTime1,
       });
-
+  
       await atualizarTime(time2, {
-        pontosFeitos: totalTime2Jogo1 + totalTime2Jogo2,
-        pontosRecebidos: totalTime1Jogo1 + totalTime1Jogo2,
-        resultado:
-          isEmpateJogo1 && isEmpateJogo2
-            ? "empate"
-            : vencedorJogo2 === time2 || vencedorJogo1 === time2
-            ? "vitoria"
-            : "derrota",
+        pontosFeitos: placarTime2,
+        pontosRecebidos: placarTime1,
+        resultado: resultadoTime2,
       });
-
-      const placarTime1 = totalTime1Jogo1 + totalTime1Jogo2;
-      const placarTime2 = totalTime2Jogo1 + totalTime2Jogo2;
-
-      let resultadoTime1: "vitoria" | "derrota" | "empate";
-      let resultadoTime2: "vitoria" | "derrota" | "empate";
-
-      if (placarTime1 > placarTime2) {
-        resultadoTime1 = "vitoria";
-        resultadoTime2 = "derrota";
-      } else if (placarTime1 < placarTime2) {
-        resultadoTime1 = "derrota";
-        resultadoTime2 = "vitoria";
-      } else {
-        resultadoTime1 = "empate";
-        resultadoTime2 = "empate";
-      }
-
+  
       await atualizarJogadores(
         time1,
-        totalTime1Jogo1 + totalTime1Jogo2,
-        totalTime2Jogo1 + totalTime2Jogo2,
+        placarTime1,
+        placarTime2,
         resultadoTime1,
         time2,
         jogoSelecionado,
         new Date(),
-        horario // <- Aqui ele vai puxar "13:00" do banco
+        horario
       );
-      
+  
       await atualizarJogadores(
         time2,
-        totalTime2Jogo1 + totalTime2Jogo2,
-        totalTime1Jogo1 + totalTime1Jogo2,
+        placarTime2,
+        placarTime1,
         resultadoTime2,
         time1,
         jogoSelecionado,
         new Date(),
         horario
       );
-
+  
       toast.success("✅ Resultado registrado com sucesso!");
     } catch (err) {
       toast.error("❌ Erro ao registrar resultado.");
@@ -262,6 +278,9 @@ const RegistrarResultado = () => {
       setLoading(false);
     }
   };
+  
+  
+  
 
   return (
     <div className="p-6 max-w-3xl mx-auto bg-gray-900 rounded-xl shadow-2xl">
