@@ -54,50 +54,48 @@ const MigrarTimes = () => {
   const [migrando, setMigrando] = useState(false);
 
   const handleMigracao = async () => {
-    if (!confirm("Tem certeza que deseja migrar os dados para times_v2 e jogadores?")) return;
-
+    if (!confirm("Tem certeza que deseja migrar os dados para times_v2 e jogadores com todos os valores zerados?")) return;
+  
     setMigrando(true);
-
+  
     try {
       const timesSnapshot = await getDocs(collection(db, "times"));
-
+  
       for (const timeDoc of timesSnapshot.docs) {
         const timeId = timeDoc.id;
         const timeData = timeDoc.data() as TimeAntigo;
-
+  
         const novoTime: TimeNovo = {
           nome: timeData.Nome || timeId,
           dono: timeData.Dono || "",
-          jogos: timeData.Jogos || 0,
-          vitorias: timeData.Vitorias || 0,
-          derrotas: timeData.Derrotas || 0,
-          empates: timeData.Empates || 0,
-          pontos: timeData.Pontos || 0,
-          pontosFeitos: timeData.pontosFeitos || 0,
-          pontosRecebidos: timeData.pontosRecebidos || 0,
+          jogos: 0,
+          vitorias: 0,
+          derrotas: 0,
+          empates: 0,
+          pontos: 0,
+          pontosFeitos: 0,
+          pontosRecebidos: 0,
         };
-
+  
         await setDoc(doc(db, "times_v2", timeId), novoTime);
-
-        // Migrar jogadores individualmente
+  
+        // Migrar jogadores individualmente com dados zerados
         if (timeData.Jogadores) {
           for (const [jogadorId, jogador] of Object.entries(timeData.Jogadores)) {
             const novoJogador: JogadorNovo = {
               nome: jogador.Nome || jogadorId,
               posicao: jogador.Posição || "",
-              jogos: jogador.Jogos || 0,
+              jogos: 0,
               timeId: timeId,
             };
-
-            // Define ID como timeId_nome para evitar duplicação
+  
             const jogadorDocId = `${timeId}_${jogadorId}`;
-
             await setDoc(doc(db, "jogadores", jogadorDocId), novoJogador);
           }
         }
       }
-
-      alert("✅ Migração concluída com sucesso!");
+  
+      alert("✅ Migração concluída com sucesso (valores zerados)!");
     } catch (error) {
       console.error("Erro ao migrar dados:", error);
       alert("❌ Erro ao migrar dados. Veja o console.");

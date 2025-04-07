@@ -63,7 +63,7 @@ const RankingJogadores: React.FC = () => {
 
           for (const jogadorDoc of jogadoresSnapshot.docs) {
             const jogadorData = jogadorDoc.data();
-            const jogos = jogadorData.jogos || 1;
+            const jogos = jogadorData.jogos || 0;
 
             const fga = jogadorData.fga || 0;
             const fgm = jogadorData.fgm || 0;

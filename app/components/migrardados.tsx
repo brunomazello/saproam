@@ -47,54 +47,54 @@ const MigrarJogadoresParaTimes = () => {
 
   const handleMigracao = async () => {
     setMigrando(true);
-
+  
     try {
       const timesSnapshot = await getDocs(collection(db, "times"));
-
+  
       for (const timeDoc of timesSnapshot.docs) {
         const timeId = timeDoc.id;
         const timeData = timeDoc.data() as TimeAntigo;
-
+  
         const jogadoresData = timeData.Jogadores;
-
+  
         if (!jogadoresData || typeof jogadoresData !== "object") {
           console.warn(`⚠️ Nenhum jogador encontrado no time: ${timeId}`);
           continue;
         }
-
+  
         for (const [jogadorKey, jogador] of Object.entries(jogadoresData)) {
           if (!jogador || typeof jogador !== "object") continue;
-
+  
           const jogadorDoc = {
             nome: jogador.Nome || jogadorKey,
             posicao: jogador.Posição || "",
-            jogos: jogador.Jogos || 0,
+            jogos: 0,
             timeId: timeId,
-            assistencias: jogador.assistencias || 0,
-            bloqueios: jogador.bloqueios || 0,
-            erros: jogador.erros || 0,
-            faltas: jogador.faltas || 0,
-            fga: jogador.fga || 0,
-            fgm: jogador.fgm || 0,
-            fta: jogador.fta || 0,
-            ftm: jogador.ftm || 0,
-            pontuacao: jogador.pontuacao || 0,
-            rebotes: jogador.rebotes || 0,
-            roubos: jogador.roubos || 0,
-            tpa: jogador.tpa || 0,
-            tpm: jogador.tpm || 0,
+            assistencias: 0,
+            bloqueios: 0,
+            erros: 0,
+            faltas: 0,
+            fga: 0,
+            fgm: 0,
+            fta: 0,
+            ftm: 0,
+            pontuacao: 0,
+            rebotes: 0,
+            roubos: 0,
+            tpa: 0,
+            tpm: 0,
           };
-
+  
           const jogadorId = jogador.Nome?.toLowerCase().replace(/\s+/g, "_") || jogadorKey;
           const jogadorRef = doc(db, "times_v2", timeId, "jogadores", jogadorId);
-
-          console.log(`📤 Adicionando jogador "${jogadorKey}" no time "${timeId}"`);
-
+  
+          console.log(`📤 Adicionando jogador "${jogadorKey}" no time "${timeId}" com campos zerados`);
+  
           await setDoc(jogadorRef, jogadorDoc);
         }
       }
-
-      alert("✅ Jogadores migrados com sucesso para a subcoleção de cada time em times_v2!");
+  
+      alert("✅ Jogadores migrados com sucesso com campos zerados!");
     } catch (error) {
       console.error("❌ Erro ao migrar jogadores:", error);
       alert("Erro ao migrar jogadores. Veja o console.");
@@ -102,7 +102,7 @@ const MigrarJogadoresParaTimes = () => {
       setMigrando(false);
     }
   };
-
+  
   return (
     <div className="p-6 max-w-xl mx-auto bg-gray-800 text-white rounded-lg shadow-lg">
       <h2 className="text-2xl font-bold mb-4">
