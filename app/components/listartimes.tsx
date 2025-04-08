@@ -14,6 +14,7 @@ interface Time {
   pontos: number;
   pontosFeitos: number;
   pontosRecebidos: number;
+  pontosSaldo: number;
   jogadores: string[];
   jogos: number[];
 }
@@ -45,6 +46,7 @@ const ListarTimes: React.FC = () => {
         const jogos = data.jogos || 0;
         const pontosFeitos = data.pontosFeitos || 0;
         const pontosRecebidos = data.pontosRecebidos || 0;
+        const pontosSaldo = (pontosFeitos - pontosRecebidos) || 0;
   
         const jogadoresSnapshot = await getDocs(collection(db, "times_v2", doc.id, "jogadores"));
   
@@ -74,7 +76,8 @@ const ListarTimes: React.FC = () => {
           empates,
           pontos,
           pontosFeitos,
-           pontosRecebidos,
+          pontosRecebidos,
+          pontosSaldo,
           jogadores: jogadoresArray.map((j) => j.Nome),
          jogos,
         });
@@ -117,6 +120,9 @@ const ListarTimes: React.FC = () => {
               <th className="px-4 py-2 border-b">D</th>
               <th className="px-4 py-2 border-b">P</th>
               <th className="px-4 py-2 border-b">PF</th>
+              <th className="px-4 py-2 border-b">PR</th>
+              <th className="px-4 py-2 border-b">PS</th>
+
             </tr>
           </thead>
 
@@ -148,6 +154,8 @@ const ListarTimes: React.FC = () => {
                 <td className="px-2 py-2 border-b">{time.derrotas}</td>
                 <td className="px-2 py-2 border-b">{time.pontos}</td>
                 <td className="px-2 py-2 border-b">{time.pontosFeitos}</td>
+                <td className="px-2 py-2 border-b">{time.pontosRecebidos}</td>
+                <td className="px-2 py-2 border-b">{time.pontosSaldo}</td>
               </tr>
             ))}
           </tbody>

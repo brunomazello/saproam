@@ -363,9 +363,12 @@ const Calendario = () => {
                       </div>
                       {jogo.encerrado && (
                         <div className="mt-4 text-center text-gray-200 font-semibold text-sm md:text-base">
-                          <span className="inline-block py-1 px-3 bg-gray-900/80 rounded-lg text-lg md:text-3xl">
-                            {jogo.vencedor?.toUpperCase()}
-                          </span>
+                          <div>
+                            <h1 className="text-md font-heading uppercase">Resultado:</h1>
+                            <span className="inline-block py-1 px-3 rounded-lg font-heading text-lg md:text-3xl">
+                              {jogo.vencedor?.toUpperCase()}
+                            </span>
+                          </div>
                         </div>
                       )}
                       <div className="flex flex-col md:flex-row justify-between items-center text-white mt-6">
@@ -481,7 +484,7 @@ const Calendario = () => {
           <div className="text-center">
             <button
               onClick={carregarMaisJogos}
-              className="bg-[--color-blue] text-white py-2 px-4 rounded-md hover:bg-[--color-blue]/80 hover:cursor-pointer hover:text-gray-400 hover:underline"
+              className="bg-blue text-white py-2 px-4 rounded-md hover:bg-blue hover:cursor-pointer hover:text-gray-400 hover:underline"
             >
               Carregar mais jogos
             </button>

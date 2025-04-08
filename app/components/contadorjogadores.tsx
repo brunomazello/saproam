@@ -59,7 +59,7 @@ const ContadorJogadores: React.FC = () => {
   }, []);
 
   return (
-    <div className="bg-gray-700 border border-gray-600 rounded-2xl p-6 w-full mx-auto">
+    <div className="bg-gray-700 border border-gray-600 rounded-2xl p-6 w-full mx-auto mt-7">
       <h3 className="text-2xl font-heading text-purple-400 mb-3 text-center">
         Jogadores Cadastrados
       </h3>

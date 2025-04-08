@@ -147,7 +147,7 @@ export default function Home() {
             </div>
           </div>
         </div>
-        <div className="flex md:flex-col flex-col md:block hidden">
+        <div className="flex flex-col md:block hidden">
           <ListarTimesMini />
           <ContadorJogadores />
         </div>
