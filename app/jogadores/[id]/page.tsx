@@ -39,39 +39,39 @@ const PaginaJogador: React.FC = () => {
     const fetchJogador = async () => {
       if (!id) return;
       try {
-        const timesRef = collection(db, "times");
-        const timesSnap = await getDocs(timesRef);
+        const timesSnap = await getDocs(collection(db, "times_v2"));
         if (timesSnap.empty) return;
-
+  
         for (const timeDoc of timesSnap.docs) {
           const timeNome = timeDoc.id;
-          const jogadoresRef = doc(db, `times/${timeNome}`);
-          const jogadoresSnap = await getDoc(jogadoresRef);
-
-          if (jogadoresSnap.exists()) {
-            const jogadoresData = jogadoresSnap.data().Jogadores;
-            for (const jogadorKey in jogadoresData) {
-              const jogadorInfo = jogadoresData[jogadorKey];
-
-              if (jogadorInfo.Nome === id) {
-                console.log("🔥 Dados do jogador encontrados:", jogadorInfo);
-
-                setJogador({
-                  Nome: jogadorInfo.Nome,
-                  Posição: jogadorInfo.Posição,
-                  Time: timeNome,
-                  Pontuação: jogadorInfo.pontuacao, // Corrigido para minúsculas
-                  Assistências: jogadorInfo.assistencias,
-                  Rebotes: jogadorInfo.rebotes,
-                  Erros: jogadorInfo.erros,
-                  Faltas: jogadorInfo.faltas,
-                  Roubos: jogadorInfo.roubos,
-                  Jogos: jogadorInfo.Jogos ?? 1, // Garantindo que não seja undefined
-                  tpm: jogadorInfo.tpm ?? 0,
-                });
-
-                return;
-              }
+  
+          // Pegando subcoleção "jogadores"
+          const jogadoresSnap = await getDocs(collection(db, `times_v2/${timeNome}/jogadores`));
+  
+          for (const jogadorDoc of jogadoresSnap.docs) {
+            const jogadorInfo = jogadorDoc.data();
+  
+            if (
+              jogadorInfo.Nome === id ||
+              jogadorInfo.nome === id // caso o campo esteja em minúsculo
+            ) {
+              console.log("🔥 Dados do jogador encontrados:", jogadorInfo);
+  
+              setJogador({
+                Nome: jogadorInfo.Nome || jogadorInfo.nome,
+                Posição: jogadorInfo.posicao || jogadorInfo["Posição"] || "Desconhecida",
+                Time: timeNome,
+                Pontuação: jogadorInfo.pontuacao ?? 0,
+                Assistências: jogadorInfo.assistencias ?? 0,
+                Rebotes: jogadorInfo.rebotes ?? 0,
+                Erros: jogadorInfo.erros ?? 0,
+                Faltas: jogadorInfo.faltas ?? 0,
+                Roubos: jogadorInfo.roubos ?? 0,
+                Jogos: jogadorInfo.Jogos ?? 1,
+                tpm: jogadorInfo.tpm ?? 0,
+              });
+  
+              return;
             }
           }
         }
@@ -81,6 +81,7 @@ const PaginaJogador: React.FC = () => {
     };
     fetchJogador();
   }, [id]);
+ 
 
   if (!jogador)
     return (

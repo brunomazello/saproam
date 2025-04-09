@@ -11,6 +11,7 @@ import EditarJogo from "../components/editarjogo";
 import SendJogosButton from "../components/sendjogosbtn";
 import CadastrarJogadorCombine from "../components/cadastrarjogadorcombine";
 import EditarJogadorCombine from "../components/editarjogadorcombine";
+import AlterarJogador from "../components/alterarjogador";
 
 export default function AdminPage() {
   const [senha, setSenha] = useState("");
@@ -133,13 +134,15 @@ export default function AdminPage() {
 
       <div className="p-6">
         {/* Conteúdo da seção ativa */}
-        {secaoAtiva === "time" && <AdicionarTime />}
+        {/* {secaoAtiva === "time" && <AdicionarTime />} */}
         {secaoAtiva === "jogador" && <EditarJogador />}
         {secaoAtiva === "jogo" && <AdicionarJogo />}
         {secaoAtiva === "time" && <EditarTime />}
         {secaoAtiva === "jogo" && <EditarJogo />}
         {secaoAtiva === "combine" && <CadastrarJogadorCombine/>}
         {secaoAtiva === "combine" && <EditarJogadorCombine/>}
+        {secaoAtiva === "time" && <AlterarJogador />}
+
         
       </div>
     </div>

@@ -329,7 +329,7 @@ const RegistrarResultado = () => {
   return (
     <div className="p-6 max-w-3xl mx-auto bg-gray-900 rounded-xl shadow-2xl">
       <ToastContainer />
-      <h2 className="text-3xl font-semibold text-blue-400 mb-8 uppercase tracking-wider text-center">
+      <h2 className="text-3xl font-semibold text-blue mb-8 uppercase tracking-wider text-center">
         Registrar Resultado
       </h2>
 
